@@ -1,8 +1,8 @@
 from django.http import HttpResponse
+from django.shortcuts import render
 
 from images.models import Image
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
 
 @require_http_methods(['GET'])
 def get_image(request, image_id):
@@ -15,13 +15,12 @@ def get_image(request, image_id):
         # Check if logged-in user is the author
         if not request.user.is_authenticated or img.author != request.user:
             return HttpResponse("Image not found", status=404)
-    return HttpResponse(img.image.url, status=200)
+    return render(request, 'images/detail.html', {'image': img})
 
 @require_http_methods(['GET'])
 def get_images(request):
-    imgs = Image.objects.filter(is_public=True)
+    images = Image.objects.filter(is_public=True)
     if request.user.is_authenticated:
-        imgs = imgs | Image.objects.filter(author=request.user)
-    imgs = imgs.values_list('image', flat=True)
-    return HttpResponse(imgs, status=200)
+        images = images | Image.objects.filter(author=request.user)
+    return render(request, 'images/list.html', {'images': images, 'current_user': request.user})
 

@@ -1,0 +1,40 @@
+﻿<!-- image_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ image.name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);}
+        .back-link { display: inline-block; margin-bottom: 24px; color: #007bff; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .image-title { margin-top: 0; color: #333; }
+        .image-author { color: #555; margin-bottom: 8px; }
+        .owner { background: #e3fcec; color: #155724; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 6px;}
+        .image-status { font-weight: bold; margin-bottom: 16px; }
+        .public { color: #28a745; }
+        .private { color: #dc3545; }
+        .image-preview { display: block; margin: 24px auto; max-width: 100%; border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.07);}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="{% url 'get_images_view' %}">&larr; Back to Gallery</a>
+        <h1 class="image-title">{{ image.name }}</h1>
+        <p class="image-author">
+            Uploaded by: {{ image.author.username }}
+            {% if image.author == request.user %}
+                <span class="owner">You</span>
+            {% endif %}
+        </p>
+        <p class="image-status {% if image.is_public %}public{% else %}private{% endif %}">
+            {% if image.is_public %}
+                This image is public.
+            {% else %}
+                This image is private.
+            {% endif %}
+        </p>
+        <img class="image-preview" src="{{ image.image.url }}" alt="{{ image.name }}">
+    </div>
+</body>
+</html>

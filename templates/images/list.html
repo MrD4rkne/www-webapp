@@ -1,0 +1,60 @@
+﻿<!-- image_list.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Image Gallery</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; margin: 0; padding: 0; }
+        .container { max-width: 900px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);}
+        h1 { text-align: center; color: #333; }
+        .gallery { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+        .card {
+            background: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            padding: 16px;
+            width: 260px;
+            text-align: center;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.15);}
+        .card img { max-width: 100%; max-height: 180px; border-radius: 4px; }
+        .public { color: #28a745; font-weight: bold; }
+        .private { color: #dc3545; font-weight: bold; }
+        .owner { background: #e3fcec; color: #155724; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 6px;}
+        a { text-decoration: none; color: #007bff; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Gallery</h1>
+        <div class="gallery">
+            {% for image in images %}
+                <div class="card">
+                    <a href="{% url 'get_image_view' image.id %}">
+                        <img src="{{ image.image.url }}" alt="{{ image.name }}">
+                    </a>
+                    <h3>{{ image.name }}</h3>
+                    <p>
+                        Uploaded by: {{ image.author.username }}
+                        {% if image.author == current_user %}
+                            <span class="owner">You</span>
+                        {% endif %}
+                    </p>
+                    <p>
+                        {% if image.is_public %}
+                            <span class="public">Public</span>
+                        {% else %}
+                            <span class="private">Private</span>
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'get_image_view' image.id %}">View Details</a>
+                </div>
+            {% empty %}
+                <p>No images found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
