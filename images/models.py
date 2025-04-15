@@ -6,3 +6,4 @@ class Image(models.Model):
     name = models.CharField(max_length=250,default="")
     image = models.ImageField(upload_to='images/')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    is_public = models.BooleanField(default=False)
