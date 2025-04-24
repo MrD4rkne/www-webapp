@@ -4,14 +4,36 @@
 <div class="container mx-auto py-20">
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Log In</h1>
     <form method="post" class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
+        {% if form.non_field_errors %}
+            <div class="mb-4 text-red-500">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
         {% csrf_token %}
         <div class="mb-4">
             <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
-            <input type="text" name="username" id="username" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+            <input type="text" name="username" id="username" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 {% if form.username.errors %}border-red-500{% endif %}" required>
+            {% if form.username.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.username.errors.0 }}</p>
+            {% endif %}
+        </div>
+        <div class="mb-4">
+            <label for="email" class="block text-gray-700 font-medium mb-2">Username</label>
+            <input type="text" name="email" id="email" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 {% if form.email.errors %}border-red-500{% endif %}" required>
+            {% if form.email.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
+            {% endif %}
         </div>
         <div class="mb-4">
             <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
-            <input type="password" name="password" id="password" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+            <input type="password" name="password" id="password" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 {% if form.password.errors %}border-red-500{% endif %}" required>
+            {% if form.password.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.password.errors.0 }}</p>
+            {% endif %}
         </div>
         <div class="flex items-center justify-between">
             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">Log In</button>
