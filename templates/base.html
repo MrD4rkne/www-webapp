@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head class="p-0 m-0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project 3">
+
+    <title>{% block title %}My Site{% endblock %}</title>
+
+    {% load static %}
+    <link
+      rel="stylesheet"
+      href="{% static 'dist/output.css' %}"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script defer src="https://unpkg.com/tailwindcss-intersect@2.0.0/dist/observer.min.js"></script>
+</head>
+<body class="bg-white text-gray-900 p-0 m-0 flex flex-col min-h-screen">
+
+    <nav class="bg-gray-800 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-white text-lg font-bold">Home</a>
+            <div>
+                <a href="/images/" class="text-white hover:text-blue-400">Images</a>
+                <a href="/admin/" class="text-white hover:text-blue-400 ml-4">Admin</a>
+            </div>
+            <div>
+                {% if user.is_authenticated %}
+                    <span class="text-white">Welcome, {{ user.username }}</span>
+                    <a href="/accounts/logout?next=/"> Logout</a>
+                {% else %}
+                    <a href="/accounts/login/" class="text-blue-400">Login</a>
+                    <a href="/signup/" class="text-blue-400 ml-4">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <div class="content flex items-center justify-center flex-grow">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Bottom Bar -->
+    <footer class="bg-gray-700 p-4">
+        <div class="container mx-auto flex lg:flex-row flex-col justify-between items-center gap-4 text-white">
+            <p>
+                Author: Marcin Szopa
+            </p>
+            <a href="https://github.com/MrD4rkne"
+                class="flex flex-row text-blue-600 relative gap-5 group items-center">
+                <i class="fab fa-github p-1 animate-ping"></i>
+                GitHub
+                <span
+                    class="absolute left-full bg-gray-600 text-white p-1 ml-4 rounded opacity-0 group-hover:opacity-100 group-hover:motion-preset-slide-right">
+                    @MrD4rkne
+                </span>
+            </a>
+
+            <div class="text-white text-center">
+                <p>This page is done as a solution of task for AW course. See more of my work
+                    <a href="https://mrd4rkne.github.io/www/">here</a>
+                    .
+                </p>
+            </div>
+
+            <div>
+                <p class="animate-pulse text-bold text-white">Stay Connected!</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
