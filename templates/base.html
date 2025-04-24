@@ -21,18 +21,32 @@
 
     <nav class="bg-gray-800 p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-white text-lg font-bold">Home</a>
-            <div>
-                <a href="/images/" class="text-white hover:text-blue-400">Images</a>
-                <a href="/admin/" class="text-white hover:text-blue-400 ml-4">Admin</a>
+            <a href="{% url 'home' %}" class="text-white text-lg font-bold">Home</a>
+            <div class="flex items-center justify-center">
+                <a href="/images/" class="text-white hover:text-blue-400 flex items-center gap-2">
+                    <i class="fas fa-images"></i>
+                    Images
+                </a>
+                {% if user.is_authenticated and user.is_staff %}
+                    <a href="/admin/" class="text-white hover:text-blue-400 ml-4 flex items-center gap-2">
+                        <i class="fas fa-tools"></i>
+                        Admin
+                    </a>
+                {% endif %}
             </div>
-            <div>
+            <div class="flex items-center justify-center">
                 {% if user.is_authenticated %}
                     <span class="text-white">Welcome, {{ user.username }}</span>
-                    <a href="/accounts/logout?next=/"> Logout</a>
-                {% else %}
-                    <a href="/accounts/login/" class="text-blue-400">Login</a>
-                    <a href="/signup/" class="text-blue-400 ml-4">Sign Up</a>
+                        <form id="logout-form" method="post" action="{% url 'logout' %}">
+                          {% csrf_token %}
+                          <button type="submit" class="text-blue-400 ml-4 flex items-center gap-2 hover:text-blue-600 hover:scale-105 transition-transform duration-300 active:scale-95">
+                              <i class="fas fa-sign-out-alt"></i>
+                              Logout
+                          </button>
+                        </form>
+                %{% else %}
+                    <a href="{% url 'login' %}" class="text-blue-400">Login</a>
+                    <a href="{% url 'signup' %}" class="text-blue-400 ml-4">Sign Up</a>
                 {% endif %}
             </div>
         </div>
@@ -59,7 +73,7 @@
             </a>
 
             <div class="text-white text-center">
-                <p>This page is done as a solution of task for AW course. See more of my work
+                <p>This app is done as a solution of task for AW course. See more of my work
                     <a href="https://mrd4rkne.github.io/www/">here</a>
                     .
                 </p>
