@@ -22,13 +22,6 @@
             {% endif %}
         </div>
         <div class="mb-4">
-            <label for="email" class="block text-gray-700 font-medium mb-2">Username</label>
-            <input type="text" name="email" id="email" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 {% if form.email.errors %}border-red-500{% endif %}" required>
-            {% if form.email.errors %}
-                <p class="text-red-500 text-sm mt-1">{{ form.email.errors.0 }}</p>
-            {% endif %}
-        </div>
-        <div class="mb-4">
             <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
             <input type="password" name="password" id="password" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 {% if form.password.errors %}border-red-500{% endif %}" required>
             {% if form.password.errors %}

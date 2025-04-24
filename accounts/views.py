@@ -6,6 +6,7 @@ def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
+            user = form.save()
             # Authenticate and log in the user
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
