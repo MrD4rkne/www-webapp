@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@plugin 'tailwind-scrollbar';
+@plugin 'tailwindcss-intersect';
+@plugin 'tailwindcss-motion';
+
+@theme {
+    --accent-color: #ff5733;
+}
+
+a{
+    @apply text-[var(--accent-color)] dark:text-[var(--accent-color)];
+}
