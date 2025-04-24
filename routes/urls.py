@@ -3,6 +3,6 @@
 from . import views
 
 urlpatterns = [
-    path('', views.post_route, name='post_route_view'),
-    path('g', views.get_routes, name='get_routes_view'),
+    path('', views.get_routes_view, name='get_routes_view'),
+    path('create/{image_id}', views.create_route, name='create_route')
 ]

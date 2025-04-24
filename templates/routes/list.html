@@ -1,89 +1,20 @@
-﻿<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moje trasy</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .routes-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .route-card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            padding: 15px;
-            transition: transform 0.3s ease;
-        }
-        .route-card:hover {
-            transform: translateY(-5px);
-        }
-        .route-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .route-details {
-            color: #666;
-            font-size: 14px;
-        }
-        .empty-message {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        .add-new {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Moje trasy</h1>
+﻿{% extends "base.html" %}
 
-        {% if routes %}
-            <div class="routes-list">
-                {% for route in routes %}
-                    <div class="route-card">
-                        <div class="route-name">{{ route.name }}</div>
-                        <div class="route-details">
-                            {% with points_count=route.point_set.count %}
-                                Liczba punktów: {{ points_count }}
-                            {% endwith %}
-                        </div>
-                        <a href="{% url 'route_detail' route.id %}">Zobacz szczegóły</a>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-message">
-                <p>Nie masz jeszcze żadnych tras.</p>
-            </div>
-        {% endif %}
-
-        <a href="{% url 'create_route' %}" class="add-new">Dodaj nową trasę</a>
-    </div>
-</body>
-</html>
+{% block content %}
+<div class="container mx-auto py-10">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Your Routes</h1>
+    {% if routes %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for route in routes %}
+                <div class="bg-white shadow-md rounded-lg p-4">
+                    <h2 class="text-xl font-semibold text-gray-800">{{ route.name }}</h2>
+                    <img src="{{ route.image.url }}" alt="{{ route.name }}" class="w-full h-48 object-cover rounded-lg mt-4">
+                    <p class="text-gray-600 mt-2">Created by: {{ current_user.username }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-600">You have no routes yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,32 +1,27 @@
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from images import models as img_models
+from .forms import RouteForm
 
 from routes.models import Route
 
-@require_http_methods(['POST'])
-@login_required(login_url='/login/')
-def post_route(request):
+@login_required()
+def create_route(request, image_id):
     if request.method == 'POST':
-        name = request.POST.get('name', '')
-        image_id = request.POST.get('image_id', None)
-
-        if not name or not image_id:
-            return render(request, 'routes/error.html', {'error': 'Invalid data'})
-
-        try:
-            image = img_models.Image.objects.get(id=image_id, author=request.user)
-        except img_models.Image.DoesNotExist:
-            return render(request, 'routes/error.html', {'error': 'Image not found or not authorized'})
-
-        route = Route.objects.create(name=name, image=image)
-        return render(request, 'routes/detail.html', {'route': route})
+        form = RouteForm(request.POST, user=request.user)
+        if form.is_valid():
+            route = form.save(commit=False)
+            route.author = request.user
+            route.save()
+            return render(request, 'routes/detail.html', {'route': route})
+    else:
+        form = RouteForm(user=request.user)
+    return render(request , 'routes/create.html', {'form': form, 'current_user': request.user})
 
 
 @require_http_methods(['GET'])
-@login_required(login_url='/login/')
-def get_routes(request):
+@login_required()
+def get_routes_view(request):
     if not request.user.is_authenticated:
         return render(request, 'routes/error.html', {'error': 'User not authenticated'})
     print("User:", request.user)
