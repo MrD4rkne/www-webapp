@@ -67,3 +67,21 @@ def create_point(request, route_id):
     point.save()
 
     return redirect('get_route_view', route_id=route.id)
+
+@require_http_methods(['POST'])
+@login_required()
+def delete_point(request, route_id, point_id):
+    try:
+        route = Route.objects.get(id=route_id)
+    except Route.DoesNotExist:
+        return HttpResponseNotFound("Route not found")
+
+    if not route.can_modify(request.user):
+        return HttpResponseForbidden("You do not have permission to modify this route")
+
+    point = route.get_points().filter(id=point_id)
+    if not point.exists():
+        return HttpResponseNotFound("Point not found")
+
+    point.delete()
+    return redirect('get_route_view', route_id=route.id)
