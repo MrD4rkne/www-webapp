@@ -8,5 +8,13 @@ class Image(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=False)
 
+    def can_access(self, user):
+        if self.is_public:
+            return True
+        return self.author == user
+
+    def are_valid_coordinates(self, x, y):
+        return self.image.height >= y >= 0 and self.image.width >= x >= 0
+
     def __str__(self):
         return self.name

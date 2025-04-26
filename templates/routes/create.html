@@ -8,10 +8,15 @@
         <div class="mb-4">
             <label for="name" class="block text-gray-700 font-medium mb-2">Route Name</label>
             <input type="text" name="name" id="name" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+            {% if form.name.errors %}
+                <p class="text-red-500 text-sm mt-1">{{ form.name.errors.0 }}</p>
+            {% endif %}
         </div>
         <div class="mb-4">
-            <label for="image" class="block text-gray-700 font-medium mb-2">Route Image</label>
-            <input type="file" name="image" id="image" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+            <label class="block text-gray-700 font-medium mb-2">Route Image</label>
+           <div class="overflow-hidden rounded-lg">
+               <img class="w-full h-auto object-cover" src="{{ image.image.url }}" alt="{{ image.name }}">
+           </div>
         </div>
         <div class="flex items-center justify-between">
             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">Create Route</button>

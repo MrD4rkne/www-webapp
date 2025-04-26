@@ -8,15 +8,20 @@ class Route(models.Model):
     image = models.ForeignKey(img_models.Image, on_delete=models.CASCADE)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
+    def can_modify(self, user):
+        return self.author == user
+
+    def get_points(self):
+        return Point.objects.filter(route=self)
+
     def __str__(self):
         return self.name
 
 class Point(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=250, default="")
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     lat = models.IntegerField()
     lon = models.IntegerField()
 
     def __str__(self):
-        return self.name
+        return f"Point <{self.lat}, {self.lon}>"

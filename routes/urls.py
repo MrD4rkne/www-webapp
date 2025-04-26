@@ -4,5 +4,7 @@ from . import views
 
 urlpatterns = [
     path('', views.get_routes_view, name='get_routes_view'),
-    path('create/{image_id}', views.create_route, name='create_route')
+    path('create/<int:image_id>', views.create_route_view, name='create_route_view'),
+    path('<int:route_id>', views.get_route_view, name='get_route_view'),
+    path('<int:route_id>/points/create', views.create_point, name='create_point')
 ]
