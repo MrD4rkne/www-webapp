@@ -7,11 +7,10 @@
         <!-- Map Section -->
         <div class="flex-1">
             <img id="map" class="w-full h-96 rounded-lg shadow-lg object-cover" src="{{ route.image.image.url }}" alt="{{ route.name }}">
+            {% load mathfilters %}
             {% for point in points %}
                 <div class="w-4 h-4 bg-red-500 border-2 border-white rounded-full absolute point"
-                     {% x_p = point.lat / image.width %}
-                        {% y_p = point.lon / image.height %}
-                     style="left: calc({{ point.lat }}% * (image.naturalWidth / image.width)); top: calc({{ point.lon }}% * (image.naturalHeight / image.height));"
+                style="left: {{ point.lat|div:route.image.image.width|mul:100 }}%; top: {{ point.lon|div:route.image.image.height|mul:100 }}%;"
                      data-pointId="{{ forloop.counter }}">
                     <span id="border-id" class="text-white text-xs font-bold"
                           style="position: absolute; top: -20px; left: -10px;">{{ forloop.counter }}</span>
