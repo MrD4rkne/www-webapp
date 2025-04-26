@@ -5,8 +5,8 @@
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ route.name }}</h1>
     <div class="flex flex-col md:flex-row gap-6">
         <!-- Map Section -->
-        <div class="w-full md:w-2/3 flex-1 relative p-0" style="width: fit-content; height: fit-content;">
-            <div class="relative" id="image-container" style="width: fit-content; height: fit-content;">
+        <div class="w-full md:w-2/3 flex-1 relative p-0">
+            <div class="relative" id="image-container">
                 <img id="map" class="rounded-lg shadow-lg object-cover" src="{{ route.image.image.url }}" alt="{{ route.name }}">
                 {% for point in points %}
                 <div class="w-4 h-4 bg-red-500 border-2 border-white rounded-full absolute point"
@@ -14,8 +14,8 @@
                      data-pointId="{{ forloop.counter }}"
                      data-pointx="{{ point.lat }}"
                      data-pointy="{{ point.lon }}">
-                    <span class="text-white text-xs font-bold"
-                          style="position: absolute; top: -20px; left: -10px;">{{ forloop.counter }}
+                    <span class="text-black text-sm font-bold bg-white px-1 py-0.5 rounded shadow"
+                          style="position: absolute; top: -25px; left: -15px;">{{ forloop.counter }}
                     </span>
             </div>
             {% endfor %}
@@ -70,8 +70,8 @@
             {#console.log("Point " + point.dataset.pointid + " coordinates: ", x, y);#}
 
             // Update point positions based on image size
-            point.style.left = `${(x * imageWidthMultiplier) - 2}px`;
-            point.style.top = `${(y * imageHeightMultiplier) - 2}px`;
+            point.style.left = `${(x * imageWidthMultiplier) - (point.offsetWidth / 2)}px`;
+            point.style.top = `${(y * imageHeightMultiplier) - (point.offsetHeight / 2)}px`;
 
             {#console.log("Point " + point.dataset.pointid + " position updated to: ", point.style.left, point.style.top);#}
         });
