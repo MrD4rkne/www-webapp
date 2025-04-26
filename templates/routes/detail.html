@@ -5,17 +5,19 @@
     <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">{{ route.name }}</h1>
     <div class="flex flex-col md:flex-row gap-6">
         <!-- Map Section -->
-        <div class="flex-1">
-            <img id="map" class="w-full h-96 rounded-lg shadow-lg object-cover" src="{{ route.image.image.url }}" alt="{{ route.name }}">
+        <div class="flex-1 relative">
+            <div class="flex-1 relative" style="width: fit-content; height: fit-content;">
+            <img id="map" class="w-full h-96 rounded-lg shadow-lg object-cover relative" src="{{ route.image.image.url }}" alt="{{ route.name }}">
             {% load mathfilters %}
             {% for point in points %}
                 <div class="w-4 h-4 bg-red-500 border-2 border-white rounded-full absolute point"
-                style="left: {{ point.lat|div:route.image.image.width|mul:100 }}%; top: {{ point.lon|div:route.image.image.height|mul:100 }}%;"
+                     style="position: absolute; left: {{ point.lat|div:route.image.image.width|mul:100 }}%; top: {{ point.lon|div:route.image.image.height|mul:100 }}%;"
                      data-pointId="{{ forloop.counter }}">
                     <span id="border-id" class="text-white text-xs font-bold"
                           style="position: absolute; top: -20px; left: -10px;">{{ forloop.counter }}</span>
                 </div>
             {% endfor %}
+            </div>
         </div>
         <!-- Points List Section -->
         <div class="w-full md:w-1/3 bg-white shadow-lg rounded-lg p-4">
@@ -42,8 +44,17 @@
         const confirmCreate = confirm("Do you want to create a point here?");
         if (confirmCreate) {
             const rect = image.getBoundingClientRect();
-            const xPercent = ((event.clientX - rect.left) / rect.width) * 100;
-            const yPercent = ((event.clientY - rect.top) / rect.height) * 100;
+            const xPercent = ((event.clientX - rect.left) / rect.width);
+            const yPercent = ((event.clientY - rect.top) / rect.height);
+
+            console.log("X Percent: ", xPercent);
+            console.log("Y Percent: ", yPercent);
+
+            let x = Math.round(xPercent * {{ route.image.image.width }});
+            let y = Math.round(yPercent * {{ route.image.image.height }});
+
+            console.log("X: ", x);
+            console.log("Y: ", y);
 
             // Create a form and submit it
             const form = document.createElement('form');
@@ -61,13 +72,14 @@
             const latitudeInput = document.createElement('input');
             latitudeInput.type = 'hidden';
             latitudeInput.name = 'lat';
-            latitudeInput.value = Math.round(xPercent);
+            latitudeInput.value = x;
             form.appendChild(latitudeInput);
 
             const longitudeInput = document.createElement('input');
             longitudeInput.type = 'hidden';
             longitudeInput.name = 'lon';
-            longitudeInput.value = Math.round(yPercent);
+            longitudeInput.value = y;
+            form.appendChild(longitudeInput);
             form.appendChild(longitudeInput);
 
             document.body.appendChild(form);
