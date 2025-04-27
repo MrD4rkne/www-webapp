@@ -1,25 +1,53 @@
 ﻿from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-from .models import Route, Point
-from .serializers import RouteDetailsSerializer, PointSerializer, RouteSerializer
+from images import models as images_models
+from .serializers import *
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
-@extend_schema(
-    responses={200: RouteSerializer(many=True)},
-    description="List all routes for the current user.",
-    tags=["Routes"])
 class RouteListAPIView(APIView):
+    @extend_schema(
+        responses={200: RouteSerializer(many=True)},
+        description="List all routes for the current user.",
+        tags=["Routes"])
     def get(self, request):
-        print(request.user)
         routes = Route.objects.filter(author=request.user)
         serializer = RouteSerializer(routes, many=True)
         return Response(serializer.data)
 
-@extend_schema()
+    @extend_schema(
+        request=RouteCreateSerializer,
+        responses={
+            201: RouteSerializer,
+            400: OpenApiResponse(description="Invalid data"),
+            404: OpenApiResponse(description="Image not found")
+        },
+        description="Create a new route.",
+        tags=["Routes"]
+    )
+    def post(self, request):
+        serializer = RouteCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            image = images_models.Image.objects.get(id=request.data['image'])
+        except images_models.Image.DoesNotExist:
+            return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not image.can_access(request.user):
+            return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer.save(author=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@extend_schema(
+    responses={200: RouteDetailsSerializer,
+               404: OpenApiResponse(description="Route not found")},
+    description="Get details of a specific route.",
+    tags=["Routes"]
+)
 class RouteDetailAPIView(APIView):
     serializer_class = RouteDetailsSerializer
 
@@ -31,7 +59,15 @@ class RouteDetailAPIView(APIView):
         serializer = self.serializer_class(route)
         return Response(serializer.data)
 
-@extend_schema()
+@extend_schema(
+    request=PointSerializer,
+    responses={201: PointSerializer,
+               400: OpenApiResponse(description="Invalid data"),
+               403: OpenApiResponse(description="You do not have permission to modify this route", examples={"application/json": {"error": "You do not have permission to modify this route"}}),
+               404: OpenApiResponse(description="Route not found")},
+    description="Create a new point in a route.",
+    tags=["Routes"],
+)
 class PointCreateAPIView(APIView):
     serializer_class = PointSerializer
 
@@ -48,5 +84,57 @@ class PointCreateAPIView(APIView):
         if not route.can_modify(request.user):
             return Response({"error": "You do not have permission to modify this route"}, status=status.HTTP_403_FORBIDDEN)
 
+        if not route.image.are_valid_coordinates(request.data['lat'], request.data['lon']):
+            return Response({"error": "Invalid coordinates"}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer.save(route=route, order=route.get_points().count() + 1)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@extend_schema(
+    responses={
+        200: PointSerializer,
+        404: OpenApiResponse(description="Point or Route not found"),
+        403: OpenApiResponse(description="You do not have permission to modify this route")
+    },
+    description="Get a point.",
+    tags=["Routes"],
+)
+class PointAPIView(APIView):
+    serializer_class = PointSerializer
+
+    def get(self, request, route_id, point_id):
+        try:
+            route = Route.objects.get(id=route_id, author=request.user)
+            point = Point.objects.get(id=point_id)
+        except Point.DoesNotExist:
+            return Response({"error": "Point not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Route.DoesNotExist:
+            return Response({"error": "Route not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(point)
+        return Response(serializer.data)
+
+@extend_schema(
+    responses={
+        204: OpenApiResponse(description="Point deleted"),
+        403: OpenApiResponse(description="You do not have permission to modify this route"),
+        404: OpenApiResponse(description="Point not found")
+    },
+    description="Delete a point.",
+    tags=["Routes"],
+)
+class PointDeleteAPIView(APIView):
+    def delete(self, request, route_id, point_id):
+        try:
+            route = Route.objects.get(id=route_id, author=request.user)
+            point = Point.objects.get(id=point_id)
+        except Point.DoesNotExist:
+            return Response({"error": "Point not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Route.DoesNotExist:
+            return Response({"error": "Route not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not route.can_modify(request.user):
+            return Response({"error": "You do not have permission to modify this route"}, status=status.HTTP_403_FORBIDDEN)
+
+        point.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
