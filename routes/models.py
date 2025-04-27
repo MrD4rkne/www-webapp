@@ -22,6 +22,10 @@ class Point(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     lat = models.IntegerField()
     lon = models.IntegerField()
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return f"Point <{self.lat}, {self.lon}>"

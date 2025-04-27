@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponse
 from .forms import RouteForm, CreatePointForm
 from images.models import Image
-
-from routes.models import Route
+import json
+from routes.models import Route, Point
 
 @require_http_methods(['GET', 'POST'])
 @login_required()
@@ -78,6 +78,7 @@ def create_point(request, route_id):
 
     point = form.save(commit=False)
     point.route = route
+    point.order = route.points.count() + 1
     point.save()
 
     return redirect('get_route_view', route_id=route.id)
@@ -99,3 +100,46 @@ def delete_point(request, route_id, point_id):
 
     point.delete()
     return redirect('get_route_view', route_id=route.id)
+
+@require_http_methods(['POST'])
+@login_required()
+def reorder_points(request, route_id):
+    try:
+        route = Route.objects.get(id=route_id)
+    except Route.DoesNotExist:
+        return HttpResponseNotFound("Route not found")
+
+    if not route.can_modify(request.user):
+        return HttpResponseForbidden("You do not have permission to modify this route")
+
+    data = json.loads(request.body)
+
+    if 'order' not in data:
+        return HttpResponseBadRequest("Invalid data format")
+
+    points = route.get_points()
+
+    for item in data.get('order', []):
+        if 'id' in item and 'order' in item:
+            new_order = item['order']
+            point_id = item['id']
+            point = points.filter(id=point_id)
+            if point.exists():
+                point = point.first()
+                point.order = new_order
+            else:
+                return HttpResponseNotFound(f"Point with id {point_id} not found")
+        else:
+            return HttpResponseBadRequest("Invalid data format")
+
+    # Validate points order
+    order_set = set()
+    for item in route.get_points():
+        if item.order in order_set:
+            return HttpResponseBadRequest("Duplicate order values found")
+        order_set.add(item.order)
+
+    # Save changes to the database
+    route.save()
+
+    return HttpResponse(status=204)

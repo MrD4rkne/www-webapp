@@ -18,11 +18,11 @@
                 {% for point in points %}
                 <div class="w-4 h-4 bg-red-500 border-2 border-white rounded-full absolute point"
                      style="left: 0; top:0;"
-                     data-pointId="{{ forloop.counter }}"
+                     data-pointId="{{ point.id }}"
                      data-pointx="{{ point.lat }}"
                      data-pointy="{{ point.lon }}">
                     <span class="text-black text-sm font-bold bg-white px-1 py-0.5 rounded shadow"
-                          style="position: absolute; top: -25px; left: -15px;">{{ forloop.counter }}
+                          style="position: absolute; top: -25px; left: -15px;">{{ point.id }}
                     </span>
             </div>
             {% endfor %}
@@ -31,11 +31,11 @@
         <!-- Points List Section -->
         <div class="w-full md:w-1/3 bg-white shadow-lg rounded-lg p-4" style="max-height: 80vh; overflow-y: auto;">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Route Points</h2>
-            <ul class="space-y-2">
+            <ul id="points-list" class="space-y-2">
                 {% for point in points %}
-                <li class="p-2 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow point-item flex justify-between items-center" data-pointId="{{ forloop.counter }}">
+                <li class="p-2 border border-gray-300 rounded-lg shadow-sm hover:shadow-md transition-shadow point-item flex justify-between items-center" data-pointId="{{ point.id }}">
                     <div>
-                        <p class="text-gray-800 font-semibold text-lg">Point {{ forloop.counter }}</p>
+                        <p class="text-gray-800 font-semibold text-lg">Point {{ point.id }}</p>
                         <div class="flex flex-row">
                             <p class="text-sm text-gray-600">X: {{ point.lat }}</p>
                             <p class="text-sm text-gray-600 ml-2">Y: {{ point.lon }}</p>
@@ -51,6 +51,38 @@
         </div>
     </div>
 </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script>
+    const list = document.getElementById('points-list');
+
+    // Enable drag-and-drop reordering
+    new Sortable(list, {
+        animation: 150,
+        onEnd: function () {
+            const order = Array.from(list.children).map((item, index) => ({
+                id: item.dataset.pointid,
+                order: index + 1
+            }));
+
+            // Send updated order to the backend
+            fetch(`/routes/{{ route.id }}/points/reorder`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ order }),
+            }).then(response => {
+                if (!response.ok) {
+                    alert('Failed to update order');
+                    // Refresh the page to revert changes
+                    location.reload();
+                }
+            });
+        }
+    });
+</script>
 
     <script>
     const image = document.getElementById('map');

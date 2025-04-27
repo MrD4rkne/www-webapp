@@ -8,5 +8,6 @@ urlpatterns = [
     path('<int:route_id>', views.get_route_view, name='get_route_view'),
     path('<int:route_id>/delete', views.delete_route, name='delete_route'),
     path('<int:route_id>/points', views.create_point, name='create_point'),
+    path('<int:route_id>/points/reorder', views.reorder_points, name='reorder_points'),
     path('<int:route_id>/points/<int:point_id>/delete', views.delete_point, name='delete_point')
 ]
