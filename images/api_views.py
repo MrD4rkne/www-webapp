@@ -19,6 +19,7 @@ class ImageListAPIView(APIView):
         return Response(serializer.data)
 
 class ImageGetAPIView(APIView):
+    permission_classes = []
     @extend_schema(
         responses={200: ImageDetailsSerializer(many=True),
                    404: OpenApiResponse(description="Image not found")},
@@ -30,7 +31,7 @@ class ImageGetAPIView(APIView):
         except Image.DoesNotExist:
             return Response({"error": "Image not found"}, status=404)
 
-        if not image.is_public and request.user != image.author:
+        if not image.is_public and ( not request.user.is_authenticated or request.user != image.author):
             return Response({"error": "Image not found"}, status=404)
 
         serializer = ImageDetailsSerializer(image)
