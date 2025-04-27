@@ -5,7 +5,7 @@ from common.serializers import UserSerializer
 class ImageSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
 
-    def get_url(self, obj):
+    def get_url(self, obj) -> str:
         return obj.image.url if obj.image else None
 
     class Meta:

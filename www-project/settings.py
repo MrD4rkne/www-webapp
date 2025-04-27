@@ -173,4 +173,9 @@ SPECTACULAR_SETTINGS = {
             'name': 'sessionid',
         },
     },
+    'TAGS': [
+        {'name': 'token', 'description': 'Endpoints for authentication'},
+        {'name': 'Routes', 'description': 'Endpoints for managing routes'},
+        {'name': 'Images', 'description': 'Endpoints for managing images'},
+    ],
 }
