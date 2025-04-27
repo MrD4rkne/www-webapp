@@ -4,12 +4,20 @@ from rest_framework import status
 from .models import Route, Point
 from .serializers import RouteSerializer, PointSerializer, RouteWithoutPointsSerializer
 
+from drf_spectacular.utils import extend_schema
+
+@extend_schema(
+    operation_id="list_routes",
+    responses={200: RouteWithoutPointsSerializer(many=True)},
+    request=None,
+    description="List all routes for the current user.")
 class RouteListAPIView(APIView):
     def get(self, request):
         routes = Route.objects.filter(author=request.user)
         serializer = RouteWithoutPointsSerializer(routes, many=True)
         return Response(serializer.data)
 
+@extend_schema(operation_id="retrieve_route")
 class RouteDetailAPIView(APIView):
     def get(self, request, route_id):
         try:
@@ -19,6 +27,7 @@ class RouteDetailAPIView(APIView):
         serializer = RouteSerializer(route)
         return Response(serializer.data)
 
+@extend_schema(operation_id="create_point")
 class PointCreateAPIView(APIView):
     def post(self, request, route_id):
         try:
