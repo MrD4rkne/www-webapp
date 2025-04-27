@@ -64,7 +64,7 @@ class RouteListAPIViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data, {'id': 1, 'name': 'New Route'})
-        # The serializer is called with a QueryDict, not a plain dict, so check the call differently
+
         called_args, called_kwargs = mock_serializer_class.call_args
         self.assertIn('data', called_kwargs)
         self.assertEqual(dict(called_kwargs['data'].lists()), {'name': ['New Route'], 'image': ['123']})
