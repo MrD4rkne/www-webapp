@@ -33,6 +33,7 @@ def create_route_view(request, image_id):
 @require_http_methods(['GET'])
 @login_required()
 def get_routes_view(request):
+    print(request.user)
     routes = Route.objects.filter(author=request.user)
     return render(request, 'routes/list.html', {'routes': routes, 'current_user': request.user})
 

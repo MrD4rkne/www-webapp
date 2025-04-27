@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'mathfilters',
     'rest_framework',
     'drf_spectacular',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -144,8 +145,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Api
 
 REST_FRAMEWORK = {
-    # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # For Bearer token authentication
+        'rest_framework.authentication.SessionAuthentication',        # For cookie-based authentication
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Require authentication by default
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -153,4 +160,17 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Project for AWWW course 2025',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY': [{'BearerAuth': []}, {'CookieAuth': []}],
+    'SECURITY_DEFINITIONS': {
+        'BearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        },
+        'CookieAuth': {
+            'type': 'apiKey',
+            'in': 'cookie',
+            'name': 'sessionid',
+        },
+    },
 }

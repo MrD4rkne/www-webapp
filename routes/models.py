@@ -19,7 +19,7 @@ class Route(models.Model):
 
 class Point(models.Model):
     id = models.AutoField(primary_key=True)
-    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name='points')
     lat = models.IntegerField()
     lon = models.IntegerField()
     order = models.IntegerField(default=0)
