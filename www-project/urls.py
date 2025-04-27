@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     path("images/", include("images.urls")),
     path("routes/", include("routes.urls")),
+    path('api/routes', include('routes.api_urls')),
     path("accounts/", include("accounts.urls")),
     path("admin/", admin.site.urls),
     path("", views.get_index, name="home")
