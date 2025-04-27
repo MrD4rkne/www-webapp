@@ -22,13 +22,21 @@
     <nav class="bg-gray-800 p-4">
         <div class="container mx-auto flex justify-between items-center">
             <a href="{% url 'home' %}" class="text-white text-lg font-bold">Home</a>
-            <div class="flex items-center justify-center">
-                <a href="/images/" class="text-white hover:text-blue-400 flex items-center gap-2">
+            <div class="flex items-center justify-center gap-4">
+                <a href="{% url 'get_images_view' %}" class="text-white hover:text-blue-400 flex items-center gap-2">
                     <i class="fas fa-images"></i>
                     Images
                 </a>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'get_routes_view' %}" class="text-white hover:text-blue-400 flex items-center gap-2">
+                        <i class="fa-solid fa-route"></i>
+                        Routes
+                    </a>
+                {% endif %}
+
                 {% if user.is_authenticated and user.is_staff %}
-                    <a href="/admin/" class="text-white hover:text-blue-400 ml-4 flex items-center gap-2">
+                    <a href="/admin/" class="text-white hover:text-blue-400 flex items-center gap-2">
                         <i class="fas fa-tools"></i>
                         Admin
                     </a>

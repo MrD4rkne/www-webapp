@@ -1,33 +1,44 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mx-auto text-center">
-    <h1 class="text-3xl font-bold mb-6">Image Gallery</h1>
-    <div class="gallery grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {% for image in images %}
-            <div class="card bg-white shadow-md rounded-lg p-4">
-                    <a href="{% url 'get_image_view' image.id %}">
-                    <img src="{{ image.image.url }}" alt="{{ image.name }}" class="w-full h-48 object-cover rounded-md">
-                    </a>
-                <h3 class="text-lg font-semibold mt-4">{{ image.name }}</h3>
-                <p class="text-sm text-gray-600">
-                        Uploaded by: {{ image.author.username }}
-                        {% if image.author == current_user %}
-                        <span class="owner text-green-500 font-bold">You</span>
-                        {% endif %}
+<div class="container mx-auto text-center py-10">
+    <h1 class="text-4xl font-extrabold mb-8 text-gray-800">Image Gallery</h1>
+    <div class="gallery grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {% for image in images %}
+            <div class="card bg-white shadow-lg rounded-lg overflow-hidden transform transition-transform hover:scale-105">
+                        <a href="{% url 'get_image_view' image.id %}">
+                            <img src="{{ image.image.url }}" alt="{{ image.name }}" class="w-full h-48 object-cover">
+                        </a>
+                <div class="p-4">
+                    <h3 class="text-xl font-semibold text-gray-700">{{ image.name }}</h3>
+                    <p class="text-sm text-gray-500 mt-2">
+                            Uploaded by: {{ image.author.username }}
+                            {% if image.author == current_user %}
+                            <span class="owner text-green-500 font-bold">You</span>
+                            {% endif %}
+                        </p>
+                    <p class="text-sm mt-1">
+                            {% if image.is_public %}
+                            <span class="public text-blue-500 font-semibold">Public</span>
+                            {% else %}
+                            <span class="private text-red-500 font-semibold">Private</span>
+                            {% endif %}
                     </p>
-                <p class="text-sm">
-                        {% if image.is_public %}
-                        <span class="public text-blue-500 font-semibold">Public</span>
-                        {% else %}
-                        <span class="private text-red-500 font-semibold">Private</span>
+                    <div class="button-group flex flex-col sm:flex-row gap-2 mt-4">
+                        <a href="{% url 'get_image_view' image.id %}" class="px-4 py-2 text-sm font-medium text-blue-500 bg-white border border-gray-200 hover:bg-blue-100 hover:scale-105 transition-transform duration-300 focus:z-10 focus:ring-2 focus:ring-blue-500 focus:text-blue-700">
+                            View Details
+                        </a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'create_route_view' image.id %}" class="px-4 py-2 text-sm font-medium text-blue-500 bg-white border border-gray-200 hover:bg-blue-100 hover:scale-105 transition-transform duration-300 focus:z-10 focus:ring-2 focus:ring-blue-500 focus:text-blue-700">
+                                Create route with
+                            </a>
                         {% endif %}
-                    </p>
-                <a href="{% url 'get_image_view' image.id %}" class="text-blue-500 hover:underline mt-2 block">View Details</a>
+                    </div>
                 </div>
-            {% empty %}
-            <p class="text-gray-500">No images found.</p>
-            {% endfor %}
+            </div>
+        {% empty %}
+            <p class="text-gray-500 col-span-full">No images found.</p>
+        {% endfor %}
         </div>
     </div>
 {% endblock %}

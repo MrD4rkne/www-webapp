@@ -49,6 +49,20 @@ def get_route_view(request, route_id):
 
 @require_http_methods(['POST'])
 @login_required()
+def delete_route(request, route_id):
+    try:
+        route = Route.objects.get(id=route_id)
+    except Route.DoesNotExist:
+        return HttpResponseNotFound("Route not found")
+
+    if not route.can_modify(request.user):
+        return HttpResponseForbidden("You do not have permission to modify this route")
+
+    route.delete()
+    return redirect('get_routes_view')
+
+@require_http_methods(['POST'])
+@login_required()
 def create_point(request, route_id):
     try:
         route = Route.objects.get(id=route_id)

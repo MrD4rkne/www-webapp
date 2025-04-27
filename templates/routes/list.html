@@ -6,11 +6,21 @@
     {% if routes %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for route in routes %}
-                <div class="bg-white shadow-md rounded-lg p-4">
+                <div class="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow duration-300">
                     <h2 class="text-xl font-semibold text-gray-800">{{ route.name }}</h2>
-                    <img src="{{ route.image.url }}" alt="{{ route.name }}" class="w-full h-48 object-cover rounded-lg mt-4">
+                    <img src="{{ route.image.image.url }}" alt="{{ route.name }}" class="w-full h-48 object-cover rounded-lg mt-4">
                     <p class="text-gray-600 mt-2">Created by: {{ current_user.username }}</p>
-                    <a href="{% url 'get_route_view' route.id %}" class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">View Details</a>
+                    <div class="mt-4 flex space-x-2 justify-center items-center gap-2">
+                        <a href="{% url 'get_route_view' route.id %}" class="inline-block bg-blue-100 text-white px-4 py-2 rounded-lg hover:bg-blue-400 hover:scale-105 duration-300">View Details</a>
+                    {% if user.is_authenticated and route.author == current_user %}
+                            <form method="POST" action="{% url 'delete_route' route.id %}" class="inline-block">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-100 text-white px-4 py-2 rounded-lg hover:bg-red-400 hover:scale-105 duration-300">
+                                    Delete
+                                </button>
+                            </form>
+                    {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         </div>
