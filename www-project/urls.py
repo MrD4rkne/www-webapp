@@ -19,5 +19,8 @@ urlpatterns = [
 
     path('api/routes/', include('routes.api_urls')),
     path('api/images/', include('images.api_urls')),
+
+    path('media/<path:path>', views.protected_media, name='protected_media'),
+
     path("", views.get_index, name="home")
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
