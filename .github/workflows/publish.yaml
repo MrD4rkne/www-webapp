@@ -52,9 +52,17 @@ jobs:
         # Run tests
         python manage.py test
 
+    - name: Create a local_settings.py for deployment
+      run: |
+        echo "import os" > local_settings.py
+        echo "STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'staticfiles')" >> local_settings.py
+        echo "DEBUG = False" >> local_settings.py
+        echo "ALLOWED_HOSTS = ['*']" >> local_settings.py
+
     - name: Collect static files
       run: |
-        python manage.py collectstatic --noinput
+        mkdir -p staticfiles
+        DJANGO_SETTINGS_MODULE=local_settings python manage.py collectstatic --noinput || python manage.py collectstatic --noinput --settings=local_settings
 
     - name: Generate deployment package
       run: |
