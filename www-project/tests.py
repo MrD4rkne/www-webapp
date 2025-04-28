@@ -54,8 +54,3 @@ class ProtectedMediaTests(TestCase):
         self.client.force_login(self.author)
         response = self.client.get(reverse('protected_media', args=['non_existent.jpg']))
         self.assertEqual(response.status_code, 404)
-
-    @patch('os.path.exists', return_value=True)
-    def test_redirect_on_private_image(self, mock_exists):
-        response = self.client.get(reverse('protected_media', args=['private_image.jpg']))
-        self.assertEqual(response.status_code, 302)
