@@ -61,18 +61,6 @@ jobs:
     - name: Create static directory
       run: mkdir -p staticfiles
 
-    - name: Modify settings for static files
-      run: |
-        # Znajdź główny plik settings.py
-        SETTINGS_FILE=$(find . -name "settings.py" | head -n 1)
-        if [ -n "$SETTINGS_FILE" ]; then
-          echo "Found settings file: $SETTINGS_FILE"
-          echo "import os" >> $SETTINGS_FILE
-          echo "STATIC_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../staticfiles')" >> $SETTINGS_FILE
-        else
-          echo "OSTRZEŻENIE: Nie znaleziono pliku settings.py"
-        fi
-
     - name: Collect static files (if command exists)
       run: |
         python -m django --help | grep collectstatic && python manage.py collectstatic --noinput || echo "Collectstatic command not available, skipping"
