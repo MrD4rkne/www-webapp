@@ -94,7 +94,7 @@ class PointModelTests(TestCase):
         self.assertEqual(self.point.route, self.route)
 
     def test_point_str(self):
-        self.assertEqual(str(self.point), "Point <10, 20>")
+        self.assertEqual(str(self.point), "Point <10, 20: 1>")
 
     def test_point_ordering(self):
         point2 = Point.objects.create(
