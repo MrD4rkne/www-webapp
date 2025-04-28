@@ -2,6 +2,9 @@
 from django.contrib.auth.models import User
 from images.models import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
+from io import BytesIO
+from PIL import Image as PILImage
+from django.core.files.base import File
 
 class ImageModelTests(TestCase):
     def setUp(self):
@@ -24,7 +27,7 @@ class ImageModelTests(TestCase):
         self.assertEqual(self.image.author, self.user)
         self.assertTrue(self.image.is_public)
 
-    def test_can_access_public_image(self):
+    def test__author__can_access_public_image(self):
         # Test that a public image can be accessed by any user
         self.assertTrue(self.image.can_access(self.user))
         self.assertTrue(self.image.can_access(self.other_user))
@@ -36,14 +39,32 @@ class ImageModelTests(TestCase):
         self.assertTrue(self.image.can_access(self.user))
         self.assertFalse(self.image.can_access(self.other_user))
 
-    def test_are_valid_coordinates(self):
-        # Test the coordinate validation logic
-        from unittest.mock import patch, PropertyMock
+    @staticmethod
+    def get_image_file(name='test.png', ext='png', size=(50, 50), color=(256, 0, 0)):
+        file_obj = BytesIO()
+        image = PILImage.new("RGB", size=size, color=color)
+        image.save(file_obj, ext)
+        file_obj.seek(0)
+        return File(file_obj, name=name)
 
-        with patch.object(type(self.image.image), "width", new_callable=PropertyMock) as mock_width, \
-             patch.object(type(self.image.image), "height", new_callable=PropertyMock) as mock_height:
-            mock_width.return_value = 100
-            mock_height.return_value = 50
-        self.assertTrue(self.image.are_valid_coordinates(10, 20))
-        self.assertFalse(self.image.are_valid_coordinates(110, 20))
-        self.assertFalse(self.image.are_valid_coordinates(10, 60))
+    def test_are_valid_coordinates(self):
+        # Test that the uploaded image has valid dimensions
+        self.image.image = self.get_image_file(name='test_image.jpg', ext='jpeg', size=(1920, 1080))
+        self.image.save()
+
+        self.assertEqual(self.image.image.width, 1920)
+        self.assertEqual(self.image.image.height, 1080)
+
+        self.assertTrue(self.image.are_valid_coordinates(0,0))
+        self.assertTrue(self.image.are_valid_coordinates(10, 5))
+        self.assertTrue(self.image.are_valid_coordinates(1920, 1080))
+
+        self.assertFalse(self.image.are_valid_coordinates(1080, 1920))
+        self.assertFalse(self.image.are_valid_coordinates(1921, 1080))
+        self.assertFalse(self.image.are_valid_coordinates(1920, 1081))
+        self.assertFalse(self.image.are_valid_coordinates(-1, 0))
+        self.assertFalse(self.image.are_valid_coordinates(0, -1))
+        self.assertFalse(self.image.are_valid_coordinates(1920, -1))
+        self.assertFalse(self.image.are_valid_coordinates(-1, 1080))
+        self.assertFalse(self.image.are_valid_coordinates(-1, -1))
+
