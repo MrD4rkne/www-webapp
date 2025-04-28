@@ -44,19 +44,22 @@
             </div>
             <div class="flex items-center justify-center">
                 {% if user.is_authenticated %}
-                    <span class="text-white">Welcome, {{ user.username }}</span>
-                        <form id="logout-form" method="post" action="{% url 'logout' %}">
+                    <span class="text-white animate-fade-in">Welcome, {{ user.username }}</span>
+                    <form id="logout-form" method="post" action="{% url 'logout' %}" class="ml-4">
                           {% csrf_token %}
-                          <button type="submit" class="text-blue-400 ml-4 flex items-center gap-2 hover:text-blue-600 hover:scale-105 transition-transform duration-300 active:scale-95">
+                        <button type="submit" class="text-blue-400 flex items-center gap-2 hover:text-blue-600 hover:scale-105 duration-300">
                               <i class="fas fa-sign-out-alt"></i>
                               Logout
                           </button>
                         </form>
-                %{% else %}
-                    <a href="{% url 'login' %}" class="text-blue-400">Login</a>
-                    <a href="{% url 'signup' %}" class="text-blue-400 ml-4">Sign Up</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-blue-400 hover:underline hover:scale-105 transition-transform duration-300 motion-safe:animate-slide-in">
+                        Login
+                    </a>
+                    <a href="{% url 'signup' %}" class="text-blue-400 ml-4 hover:underline hover:scale-105 transition-transform duration-300 motion-safe:animate-slide-in">
+                        Sign Up
+                    </a>
                 {% endif %}
-            </div>
         </div>
     </nav>
     <div class="content flex items-center justify-center flex-grow">

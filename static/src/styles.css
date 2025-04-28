@@ -13,5 +13,5 @@ a{
 }
 
 #navigation a {
-    @apply hover:scale-105 hover:bg-white rounded-2xl duration-300 hover:-motion-translate-y-loop p-2;
+    @apply hover:scale-105 hover:bg-white rounded-2xl duration-500 hover:-motion-translate-y-loop motion-duration-1500 p-2;
 }
