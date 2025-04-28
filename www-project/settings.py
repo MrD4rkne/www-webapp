@@ -32,8 +32,12 @@ ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1", "10.0.2.53"]
 
 if os.getenv("DJANGO_ALLOWED_HOST"):
     ALLOWED_HOSTS.append(os.getenv("DJANGO_ALLOWED_HOST"))
+
+if os.getenv('CSRF_TRUSTED_ORIGINS'):
+    CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+else:
     CSRF_TRUSTED_ORIGINS = [
-        os.getenv("DJANGO_ALLOWED_HOST")
+        'https://awww-ambvg7a0h0hxawae.polandcentral-01.azurewebsites.net'
     ]
 
 # Application definition
