@@ -119,27 +119,31 @@ def reorder_points(request, route_id):
 
     points = route.get_points()
 
+    # Validate all data before saving
+    new_orders = []
     for item in data.get('order', []):
         if 'id' in item and 'order' in item:
-            new_order = item['order']
             point_id = item['id']
-            point = points.filter(id=point_id)
-            if point.exists():
-                point = point.first()
-                point.order = new_order
-            else:
+            new_order = item['order']
+            point = points.filter(id=point_id).first()
+            if not point:
                 return HttpResponseNotFound(f"Point with id {point_id} not found")
+            new_orders.append((point, new_order))
         else:
             return HttpResponseBadRequest("Invalid data format")
 
     # Validate points order
     order_set = set()
-    for item in route.get_points():
-        if item.order in order_set:
+    for _, new_order in new_orders:
+        if new_order in order_set:
             return HttpResponseBadRequest("Duplicate order values found")
-        order_set.add(item.order)
+        order_set.add(new_order)
 
-    # Save changes to the database
+    # Save points only if validation passes
+    for point, new_order in new_orders:
+        point.order = new_order
+        point.save()
+
     route.save()
 
     return HttpResponse(status=204)

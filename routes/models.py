@@ -28,4 +28,4 @@ class Point(models.Model):
         ordering = ['order']
 
     def __str__(self):
-        return f"Point <{self.lat}, {self.lon}>"
+        return f"Point <{self.lat}, {self.lon}: {self.order}>"

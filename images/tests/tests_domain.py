@@ -2,9 +2,7 @@
 from django.contrib.auth.models import User
 from images.models import Image
 from django.core.files.uploadedfile import SimpleUploadedFile
-from io import BytesIO
-from PIL import Image as PILImage
-from django.core.files.base import File
+from common.tests.helpers import ImageHelper
 
 class ImageModelTests(TestCase):
     def setUp(self):
@@ -15,7 +13,7 @@ class ImageModelTests(TestCase):
         # Create a test image
         self.image = Image.objects.create(
             name="Test Image",
-            image=SimpleUploadedFile("test_image.jpg", b"file_content", content_type="image/jpeg"),
+            image=ImageHelper.get_image_file(name='test_image.jpg', ext='jpeg', size=(1920, 1080)),
             author=self.user,
             is_public=True
         )
@@ -39,19 +37,8 @@ class ImageModelTests(TestCase):
         self.assertTrue(self.image.can_access(self.user))
         self.assertFalse(self.image.can_access(self.other_user))
 
-    @staticmethod
-    def get_image_file(name='test.png', ext='png', size=(50, 50), color=(256, 0, 0)):
-        file_obj = BytesIO()
-        image = PILImage.new("RGB", size=size, color=color)
-        image.save(file_obj, ext)
-        file_obj.seek(0)
-        return File(file_obj, name=name)
-
     def test_are_valid_coordinates(self):
         # Test that the uploaded image has valid dimensions
-        self.image.image = self.get_image_file(name='test_image.jpg', ext='jpeg', size=(1920, 1080))
-        self.image.save()
-
         self.assertEqual(self.image.image.width, 1920)
         self.assertEqual(self.image.image.height, 1080)
 
