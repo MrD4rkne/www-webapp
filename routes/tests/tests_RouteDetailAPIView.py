@@ -48,8 +48,6 @@ class RouteDetailAPIViewTests(APITestCase):
         # Test retrieving route details successfully
         self.client.force_login(self.user)
         response = self.client.get(f"/api/routes/{self.route.id}/")
-        print(self.route_data)
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, self.route_data)
 

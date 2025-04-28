@@ -13,9 +13,6 @@ def signup_view(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             return redirect('home')
-        else:
-            # Handle form errors
-            print(form.errors)
     else:
         form = SignUpForm()
     return render(request, 'accounts/signup.html', {'form': form})
