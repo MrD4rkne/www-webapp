@@ -11,3 +11,7 @@
 a{
     @apply text-[var(--accent-color)] dark:text-[var(--accent-color)];
 }
+
+#navigation a {
+    @apply hover:scale-105 hover:bg-white rounded-2xl duration-300 hover:-motion-translate-y-loop p-2;
+}
