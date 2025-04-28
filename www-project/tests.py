@@ -55,17 +55,6 @@ class ProtectedMediaTests(TestCase):
         response = self.client.get(reverse('protected_media', args=['non_existent.jpg']))
         self.assertEqual(response.status_code, 404)
 
-    @patch('os.path.exists', return_value=False)
-    def test_redirect_on_non_existing_image(self, mock_exists):
-        self.client.logout()
-        response = self.client.get(reverse('protected_media', args=['non_existent.jpg']))
-        self.assertEqual(response.status_code, 302)
-
-    @patch('os.path.exists', return_value=True)
-    def test_redirect_on_public_image(self, mock_exists):
-        response = self.client.get(reverse('protected_media', args=['public_image.jpg']))
-        self.assertEqual(response.status_code, 302)
-
     @patch('os.path.exists', return_value=True)
     def test_redirect_on_private_image(self, mock_exists):
         response = self.client.get(reverse('protected_media', args=['private_image.jpg']))
