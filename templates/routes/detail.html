@@ -119,8 +119,8 @@
     // Update positions on window resize
     window.addEventListener('resize', updatePointPositions);
 
-    // Initial positioning
-    updatePointPositions();
+    // Initial positioning after the image has loaded
+    image.addEventListener('load', updatePointPositions);
 
     // Handle double-click to create a new point
     image.addEventListener('dblclick', (event) => {
