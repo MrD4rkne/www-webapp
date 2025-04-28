@@ -42,22 +42,44 @@ class RouteListAPIView(APIView):
         serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@extend_schema(
-    responses={200: RouteDetailsSerializer,
-               404: OpenApiResponse(description="Route not found")},
-    description="Get details of a specific route.",
-    tags=["Routes"]
-)
-class RouteDetailAPIView(APIView):
+class RouteAPIView(APIView):
     serializer_class = RouteDetailsSerializer
 
+    @extend_schema(
+        responses={200: RouteDetailsSerializer,
+                   404: OpenApiResponse(description="Route not found")},
+        description="Get details of a specific route.",
+        tags=["Routes"]
+    )
     def get(self, request, route_id):
         try:
-            route = Route.objects.get(id=route_id, author=request.user)
+            route = Route.objects.get(id=route_id)
         except Route.DoesNotExist:
             return Response({"error": "Route not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.serializer_class(route)
         return Response(serializer.data)
+
+    @extend_schema(
+        responses={
+            204: OpenApiResponse(description="Route deleted"),
+            403: OpenApiResponse(description="You do not have permission to modify this route"),
+            404: OpenApiResponse(description="Route not found")
+        },
+        description="Delete a route.",
+        tags=["Routes"]
+    )
+    def delete(self, request, route_id):
+        try:
+            route = Route.objects.get(id=route_id)
+        except Route.DoesNotExist:
+            return Response({"error": "Route not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not route.can_modify(request.user):
+            return Response({"error": "You do not have permission to modify this route"},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        route.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @extend_schema(
     request=PointSerializer,
@@ -73,11 +95,11 @@ class PointCreateAPIView(APIView):
 
     def post(self, request, route_id):
         try:
-            route = Route.objects.get(id=route_id, author=request.user)
+            route = Route.objects.get(id=route_id)
         except Route.DoesNotExist:
             return Response({"error": "Route not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = PointSerializer(data=request.data)
+        serializer = CreatePointSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -104,8 +126,10 @@ class PointAPIView(APIView):
 
     def get(self, request, route_id, point_id):
         try:
-            route = Route.objects.get(id=route_id, author=request.user)
-            point = Point.objects.get(id=point_id)
+            route = Route.objects.get(id=route_id)
+            point = route.get_points().filter(id=point_id).first()
+            if not point:
+                raise Point.DoesNotExist
         except Point.DoesNotExist:
             return Response({"error": "Point not found"}, status=status.HTTP_404_NOT_FOUND)
         except Route.DoesNotExist:
@@ -126,7 +150,7 @@ class PointAPIView(APIView):
 class PointDeleteAPIView(APIView):
     def delete(self, request, route_id, point_id):
         try:
-            route = Route.objects.get(id=route_id, author=request.user)
+            route = Route.objects.get(id=route_id)
             point = Point.objects.get(id=point_id)
         except Point.DoesNotExist:
             return Response({"error": "Point not found"}, status=status.HTTP_404_NOT_FOUND)
