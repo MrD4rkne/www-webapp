@@ -29,6 +29,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1", "10.0.2.53"]
 
+if os.getenv("DJANGO_ALLOWED_HOST"):
+    ALLOWED_HOSTS.append(os.getenv("DJANGO_ALLOWED_HOST"))
+
 # Application definition
 
 INSTALLED_APPS = [
