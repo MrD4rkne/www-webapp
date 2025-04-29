@@ -35,10 +35,6 @@ if os.getenv("DJANGO_ALLOWED_HOST"):
 
 if os.getenv('CSRF_TRUSTED_ORIGINS'):
     CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
-else:
-    CSRF_TRUSTED_ORIGINS = [
-        'https://awww-ambvg7a0h0hxawae.polandcentral-01.azurewebsites.net'
-    ]
 
 # Application definition
 
