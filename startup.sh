@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Zainstaluj zależności
+# Install dependencies
 pip install -r requirements.txt
 
-# Zbierz pliki statyczne
+# Collect static
 python manage.py collectstatic --noinput
 
-# Uruchom aplikację
+# Launch app
 gunicorn www-project.wsgi
