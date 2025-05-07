@@ -67,7 +67,7 @@ jobs:
 
     - name: Generate deployment package
       run: |
-        zip -r deploy.zip . -x ".*" -x "__pycache__/*" -x "*.git*" -x "node_modules/*" -x "*.github/*"
+        zip -r deploy.zip . -x ".*" -x "*__pycache__/*" -x "*.git*" -x "*node_modules/*" -x "*.github/*"
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
