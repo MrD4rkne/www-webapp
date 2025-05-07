@@ -12,6 +12,10 @@ a{
     @apply text-[var(--accent-color)] dark:text-[var(--accent-color)];
 }
 
-#navigation a {
+.navigation a {
     @apply hover:scale-105 hover:bg-white rounded-2xl duration-500 hover:-motion-translate-y-loop motion-duration-1500 p-2;
+}
+
+.navigation{
+    @apply items-center justify-center gap-4;
 }
