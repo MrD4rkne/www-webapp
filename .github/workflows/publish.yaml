@@ -61,6 +61,10 @@ jobs:
     - name: Create static directory
       run: mkdir -p staticfiles
 
+    - name: Collect static files (if command exists)
+      run: |
+        python manage.py collectstatic
+
     - name: Generate deployment package
       run: |
         zip -r deploy.zip . -x ".*" -x "__pycache__/*" -x "*.git*" -x "node_modules/*" -x "*.github/*"
