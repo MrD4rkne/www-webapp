@@ -1,12 +1,13 @@
 {
   "scripts": {
-    "build": "npx tailwindcss -i ./static/src/styles.css -o ./static/dist/output.css --minify",
-    "dev": "npx tailwindcss -i ./static/src/styles.css -o ./static/dist/output.css --watch"
+    "build": "npx tailwindcss -i ./static/src/css/styles.css -o ./static/dist/css/output.css --minify && tsc",
+    "dev": "npx tailwindcss -i ./static/src/css/styles.css -o ./static/dist/css/output.css --watch && tsc --watch"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.4"
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.4",
