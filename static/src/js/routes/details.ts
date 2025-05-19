@@ -194,6 +194,7 @@ function display(route: Route) : void{
     }
 
     positionPoints(route);
+    drawEdges(route.points);
 }
 
 function createPoint(point: Point): HTMLDivElement {
@@ -215,8 +216,46 @@ function createPoint(point: Point): HTMLDivElement {
     addDragListenersToPoint(pointElement as HTMLElement);
     pointElement.appendChild(labelElement);
 
-
     return pointElement;
+}
+
+function drawEdges(points: Point[]): void {
+    const backgroundContainer = document.getElementById('background-container') as HTMLDivElement;
+    if (!backgroundContainer) {
+        console.error('BackgroundContainer element not found');
+        return;
+    }
+
+    // Remove existing edges
+    const existingEdges = backgroundContainer.querySelectorAll('.edge');
+    existingEdges.forEach(edge => edge.remove());
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const startPoint = points[i];
+        const endPoint = points[i + 1];
+
+        const edge = document.createElement('div');
+        edge.className = 'absolute bg-black edge';
+        edge.style.position = 'absolute';
+
+        const startX = parseFloat((backgroundContainer.querySelector(`.point[data-pointId="${startPoint.id}"]`) as HTMLDivElement)?.style.left || '0');
+        const startY = parseFloat((backgroundContainer.querySelector(`.point[data-pointId="${startPoint.id}"]`) as HTMLDivElement)?.style.top || '0');
+        const endX = parseFloat((backgroundContainer.querySelector(`.point[data-pointId="${endPoint.id}"]`) as HTMLDivElement)?.style.left || '0');
+        const endY = parseFloat((backgroundContainer.querySelector(`.point[data-pointId="${endPoint.id}"]`) as HTMLDivElement)?.style.top || '0');
+
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        edge.style.width = `${distance}px`;
+        edge.style.height = '2px';
+        edge.style.transformOrigin = '0 0';
+        edge.style.transform = `rotate(${Math.atan2(deltaY, deltaX) * (180 / Math.PI)}deg)`;
+        edge.style.left = `${startX + 2}px`; // Adjust for point size
+        edge.style.top = `${startY + 2}px`; // Adjust for point size
+
+        backgroundContainer.appendChild(edge);
+    }
 }
 
 function positionPoints(route: Route): void {
@@ -225,9 +264,6 @@ function positionPoints(route: Route): void {
         console.error('BackgroundContainer element not found');
         return;
     }
-
-    const imageWidthMultiplier = backgroundContainer.offsetWidth / route.image.width;
-    const imageHeightMultiplier = backgroundContainer.offsetHeight / route.image.height;
 
     for (const point of route.points) {
         const pointElement = backgroundContainer.querySelector(`.point[data-pointId="${point.id}"]`) as HTMLDivElement;
@@ -294,6 +330,7 @@ function addListeners() : void {
         const pointElement = createPoint(newPoint);
         backgroundContainer.appendChild(pointElement);
         positionPoints(routeData);
+        drawEdges(routeData.points);
     });
 
     document.addEventListener('mousemove', onMouseMove);
@@ -341,6 +378,7 @@ function onMouseMove(e: MouseEvent): void {
 
     draggedPoint.style.left = `${boundedX}px`;
     draggedPoint.style.top = `${boundedY}px`;
+    drawEdges(routeData.points);
 }
 
 function onMouseUp(e: MouseEvent): void {
