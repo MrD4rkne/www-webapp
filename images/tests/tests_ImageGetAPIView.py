@@ -2,8 +2,8 @@ from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from images.models import Image
 from rest_framework.test import APIClient
-from rest_framework.authtoken.models import Token
 from django.urls import path, include
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 class ImageViewTests(APITestCase):
     urlpatterns = [
@@ -22,7 +22,7 @@ class ImageViewTests(APITestCase):
         # Create an image
         self.public_image = Image.objects.create(
             name='Test Image',
-            image='path/to/image.jpg',
+            image=SimpleUploadedFile("path/to/image.jpg", b"file_content", content_type="image/jpeg"),
             author=self.author,
             is_public=True
         )
@@ -34,12 +34,14 @@ class ImageViewTests(APITestCase):
             'author':{
                 'username': self.author.username
             },
-            'is_public': True
+            'is_public': True,
+            'width': self.public_image.image.width,
+            'height': self.public_image.image.height,
         }
 
         self.private_image = Image.objects.create(
             name='Private Image',
-            image='path/to/private_image.jpg',
+            image=SimpleUploadedFile("path/to/private_image.jpg", b"file_content", content_type="image/jpeg"),
             author=self.author,
             is_public=False
         )
@@ -51,7 +53,9 @@ class ImageViewTests(APITestCase):
             'author':{
                 'username': self.author.username
             },
-            'is_public': False
+            'is_public': False,
+            'width': self.private_image.image.width,
+            'height': self.private_image.image.height,
         }
 
     def test_get_public_image_as_anonymous_user(self):

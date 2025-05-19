@@ -44,6 +44,8 @@ class RouteAPIViewTests(APITestCase):
                 "name": self.image.name,
                 "url": self.image.image.url,
                 "is_public": self.image.is_public,
+                'width': self.image.image.width,
+                'height': self.image.image.height,
             },
             "author": {
                 "username": self.user.username,

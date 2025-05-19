@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from images.models import Image
 from rest_framework.test import APIClient
 from django.urls import path, include
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 class ImageListAPIViewTests(APITestCase):
     urlpatterns = [
@@ -20,7 +21,7 @@ class ImageListAPIViewTests(APITestCase):
         # Create images
         self.public_image = Image.objects.create(
             name='Public Image',
-            image='path/to/public_image.jpg',
+            image=SimpleUploadedFile("path/to/public_image.jpg", b"file_content", content_type="image/jpeg"),
             author=self.author,
             is_public=True
         )
@@ -29,12 +30,14 @@ class ImageListAPIViewTests(APITestCase):
             'id': self.public_image.id,
             'name': self.public_image.name,
             'url': self.public_image.image.url,
-            'is_public': True
+            'is_public': True,
+            'width': self.public_image.image.width,
+            'height': self.public_image.image.height,
         }
 
         self.private_image = Image.objects.create(
             name='Private Image',
-            image='path/to/private_image.jpg',
+            image=SimpleUploadedFile("path/to/private_image.jpg", b"file_content", content_type="image/jpeg"),
             author=self.author,
             is_public=False
         )
@@ -43,7 +46,9 @@ class ImageListAPIViewTests(APITestCase):
             'id': self.private_image.id,
             'name': self.private_image.name,
             'url': self.private_image.image.url,
-            'is_public': False
+            'is_public': False,
+            'width': self.private_image.image.width,
+            'height': self.private_image.image.height,
         }
 
     def test_list_images_as_anonymous_user(self):
