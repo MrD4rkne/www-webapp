@@ -5,6 +5,7 @@ from django.http import HttpResponseNotFound, HttpResponseForbidden, HttpRespons
 from .forms import RouteForm, CreatePointForm
 from images.models import Image
 import json
+from django.core.serializers.json import DjangoJSONEncoder
 from routes.models import Route, Point
 
 @require_http_methods(['GET', 'POST'])
@@ -45,7 +46,35 @@ def get_route_view(request, route_id):
         return HttpResponseNotFound("Route not found")
 
     points = route.get_points()
-    return render(request, 'routes/detail.html', {'route': route, 'points': points, 'current_user': request.user})
+
+    route_data = {
+        'id': route.id,
+        'name': route.name,
+        'image_url': route.image.image.url,
+        'image_width': route.image.image.width,
+        'image_height': route.image.image.height,
+        'author_id': route.author.id,
+        'author_username': route.author.username,
+    }
+
+    points_data = [
+        {
+            'id': point.id,
+            'lat': point.lat,
+            'lon': point.lon,
+            'order': point.order,
+        } for point in points
+    ]
+
+    context = {
+        'route': route,
+        'points': points,
+        'route_json': json.dumps(route_data, cls=DjangoJSONEncoder),
+        'points_json': json.dumps(points_data, cls=DjangoJSONEncoder),
+        'current_user': request.user
+    }
+
+    return render(request, 'routes/detail.html', context)
 
 @require_http_methods(['POST'])
 @login_required()
