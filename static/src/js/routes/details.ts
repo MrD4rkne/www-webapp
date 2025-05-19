@@ -90,6 +90,50 @@ class Route {
     }
 }
 
+/**
+ * Converts lat/lon to pixel coordinates
+ */
+function convertLatLonToPixels(
+    lat: number,
+    lon: number,
+    containerWidth: number,
+    containerHeight: number,
+    imageWidth: number,
+    imageHeight: number,
+    elementWidth: number = 0,
+    elementHeight: number = 0
+): { x: number, y: number } {
+    const imageWidthMultiplier = containerWidth / imageWidth;
+    const imageHeightMultiplier = containerHeight / imageHeight;
+
+    // We subtract half the element size to center it
+    const x = (lat * imageWidthMultiplier) - (elementWidth / 2);
+    const y = (lon * imageHeightMultiplier) - (elementHeight / 2);
+
+    return { x, y };
+}
+
+/**
+ * Converts pixel coordinates to lat/lon
+ */
+function convertPixelsToLatLon(
+    x: number,
+    y: number,
+    containerWidth: number,
+    containerHeight: number,
+    imageWidth: number,
+    imageHeight: number
+): { lat: number, lon: number } {
+    const imageWidthMultiplier = containerWidth / imageWidth;
+    const imageHeightMultiplier = containerHeight / imageHeight;
+
+    // 2 decimal places
+    const lat = Math.round((x / imageWidthMultiplier) * 100) / 100;
+    const lon = Math.round((y / imageHeightMultiplier) * 100) / 100;
+
+    return { lat, lon };
+}
+
 let routeData: Route;
 let csrfToken: string;
 
@@ -187,14 +231,24 @@ function positionPoints(route: Route): void {
 
     for (const point of route.points) {
         const pointElement = backgroundContainer.querySelector(`.point[data-pointId="${point.id}"]`) as HTMLDivElement;
-        if (pointElement) {
-            const newX = (point.lat * imageWidthMultiplier) - (pointElement.offsetWidth / 2);
-            const newY = (point.lon * imageHeightMultiplier) - (pointElement.offsetHeight / 2);
-            pointElement.style.left = `${newX}px`;
-            pointElement.style.top = `${newY}px`;
-        } else {
+        if(!pointElement) {
             console.error(`Point element with ID ${point.id} not found`);
+            continue;
         }
+
+        const { x, y } = convertLatLonToPixels(
+                point.lat,
+                point.lon,
+                backgroundContainer.offsetWidth,
+                backgroundContainer.offsetHeight,
+                route.image.width,
+                route.image.height,
+                pointElement.offsetWidth,
+                pointElement.offsetHeight
+        );
+
+        pointElement.style.left = `${x}px`;
+        pointElement.style.top = `${y}px`;
     }
 }
 
@@ -226,10 +280,14 @@ function addListeners() : void {
         const x = event.offsetX;
         const y = event.offsetY;
 
-        const imageWidthMultiplier = backgroundContainer.offsetWidth / routeData.image.width;
-        const imageHeightMultiplier = backgroundContainer.offsetHeight / routeData.image.height;
-        const lat = Math.round((x / imageWidthMultiplier) * 100) / 100;
-        const lon = Math.round((y / imageHeightMultiplier) * 100) / 100;
+        const { lat, lon } = convertPixelsToLatLon(
+            x,
+            y,
+            backgroundContainer.offsetWidth,
+            backgroundContainer.offsetHeight,
+            routeData.image.width,
+            routeData.image.height
+        );
         const newPoint = new Point({ id: Date.now(), lat, lon, order: routeData.points.length + 1 });
         routeData.points.push(newPoint);
 
@@ -307,11 +365,14 @@ function onMouseUp(e: MouseEvent): void {
     const posX = rect.left - containerRect.left + draggedPoint.offsetWidth / 2;
     const posY = rect.top - containerRect.top + draggedPoint.offsetHeight / 2;
 
-    const imageWidthMultiplier = backgroundContainer.offsetWidth / routeData.image.width;
-    const imageHeightMultiplier = backgroundContainer.offsetHeight / routeData.image.height;
-
-    const lat = Math.round((posX / imageWidthMultiplier) * 100) / 100;
-    const lon = Math.round((posY / imageHeightMultiplier) * 100) / 100;
+    const { lat, lon } = convertPixelsToLatLon(
+        posX,
+        posY,
+        backgroundContainer.offsetWidth,
+        backgroundContainer.offsetHeight,
+        routeData.image.width,
+        routeData.image.height
+    );
 
     const pointIndex = routeData.points.findIndex(p => p.id === pointId);
     if (pointIndex !== -1) {
