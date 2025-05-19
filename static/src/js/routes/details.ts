@@ -168,7 +168,9 @@ function createPoint(point: Point): HTMLDivElement {
     labelElement.style.left = '-15px';
     labelElement.textContent = point.order.toString();
 
+    addDragListenersToPoint(pointElement as HTMLElement);
     pointElement.appendChild(labelElement);
+
 
     return pointElement;
 }
@@ -235,4 +237,92 @@ function addListeners() : void {
         backgroundContainer.appendChild(pointElement);
         positionPoints(routeData);
     });
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+
+    backgroundContainer.addEventListener('dragover', (event) => {
+        event.preventDefault();
+    });
+}
+
+let draggedPoint: HTMLElement | null = null;
+let offsetX: number = 0;
+let offsetY: number = 0;
+let isDragging: boolean = false;
+
+function addDragListenersToPoint(point: HTMLElement): void {
+    point.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+
+        draggedPoint = point;
+
+        const rect = point.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        isDragging = true;
+    });
+}
+
+function onMouseMove(e: MouseEvent): void {
+    if (!isDragging || !draggedPoint) return;
+
+    const backgroundContainer = document.getElementById('background-container') as HTMLDivElement;
+    if (!backgroundContainer) return;
+
+    const containerRect = backgroundContainer.getBoundingClientRect();
+    const x = e.clientX - containerRect.left - offsetX;
+    const y = e.clientY - containerRect.top - offsetY;
+
+    const maxX = backgroundContainer.offsetWidth - draggedPoint.offsetWidth;
+    const maxY = backgroundContainer.offsetHeight - draggedPoint.offsetHeight;
+
+    const boundedX = Math.max(0, Math.min(x, maxX));
+    const boundedY = Math.max(0, Math.min(y, maxY));
+
+    draggedPoint.style.left = `${boundedX}px`;
+    draggedPoint.style.top = `${boundedY}px`;
+}
+
+function onMouseUp(e: MouseEvent): void {
+    if (!isDragging || !draggedPoint) return;
+
+    const pointId = parseInt(draggedPoint.getAttribute('data-pointId') || '0', 10);
+    if (!pointId) {
+        console.error('Brak ID punktu');
+        resetDragState();
+        return;
+    }
+
+    const backgroundContainer = document.getElementById('background-container') as HTMLDivElement;
+    if (!backgroundContainer) {
+        resetDragState();
+        return;
+    }
+
+    const rect = draggedPoint.getBoundingClientRect();
+    const containerRect = backgroundContainer.getBoundingClientRect();
+
+    const posX = rect.left - containerRect.left + draggedPoint.offsetWidth / 2;
+    const posY = rect.top - containerRect.top + draggedPoint.offsetHeight / 2;
+
+    const imageWidthMultiplier = backgroundContainer.offsetWidth / routeData.image.width;
+    const imageHeightMultiplier = backgroundContainer.offsetHeight / routeData.image.height;
+
+    const lat = Math.round((posX / imageWidthMultiplier) * 100) / 100;
+    const lon = Math.round((posY / imageHeightMultiplier) * 100) / 100;
+
+    const pointIndex = routeData.points.findIndex(p => p.id === pointId);
+    if (pointIndex !== -1) {
+        routeData.points[pointIndex].lat = lat;
+        routeData.points[pointIndex].lon = lon;
+    }
+
+    resetDragState();
+}
+
+function resetDragState(): void {
+    isDragging = false;
+    draggedPoint = null;
 }
