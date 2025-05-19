@@ -272,8 +272,8 @@ function onMouseMove(e: MouseEvent): void {
     if (!backgroundContainer) return;
 
     const containerRect = backgroundContainer.getBoundingClientRect();
-    const x = e.clientX - containerRect.left - offsetX;
-    const y = e.clientY - containerRect.top - offsetY;
+    const x = Math.max(0, Math.min(e.clientX - containerRect.left - offsetX, containerRect.width - draggedPoint.offsetWidth));
+    const y = Math.max(0, Math.min(e.clientY - containerRect.top - offsetY, containerRect.height - draggedPoint.offsetHeight));
 
     const maxX = backgroundContainer.offsetWidth - draggedPoint.offsetWidth;
     const maxY = backgroundContainer.offsetHeight - draggedPoint.offsetHeight;
@@ -290,7 +290,7 @@ function onMouseUp(e: MouseEvent): void {
 
     const pointId = parseInt(draggedPoint.getAttribute('data-pointId') || '0', 10);
     if (!pointId) {
-        console.error('Brak ID punktu');
+        console.error('Point ID not found');
         resetDragState();
         return;
     }
