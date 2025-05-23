@@ -9,6 +9,7 @@ services:
             - db
         environment:
             - DB_HOST=db
+            - DEBUG=True
 
     db:
         image: "postgres:latest"
