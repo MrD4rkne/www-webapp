@@ -59,7 +59,7 @@ jobs:
         python manage.py test
 
     - name: Create static directory
-      run: mkdir -p staticfiles
+      run: mkdir -p static
 
     - name: Collect static files (if command exists)
       run: |
