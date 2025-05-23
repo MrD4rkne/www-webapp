@@ -1,7 +1,9 @@
 {
   "scripts": {
-    "build": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --minify && tsc",
-    "dev": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --watch && tsc --watch"
+    "build:tailwind": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --minify",
+    "build:css": "npm run build:tailwind",
+    "build:fa": "xcopy /E /I node_modules\\@fortawesome\\fontawesome-free\\css static\\css\\dist && xcopy /E /I node_modules\\@fortawesome\\fontawesome-free\\webfonts static\\css\\webfonts",
+    "build" : "npm run build:css && npm run build:fa"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
@@ -9,6 +11,7 @@
     "tailwindcss": "^4.1.4"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
     "@tailwindcss/cli": "^4.1.4",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-intersect": "^2.2.0",
