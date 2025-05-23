@@ -2,11 +2,12 @@
   "scripts": {
     "build:tailwind": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --minify",
     "build:css": "npm run build:tailwind",
-    "build:fa": "xcopy /E /I node_modules\\@fortawesome\\fontawesome-free\\css static\\css\\dist && xcopy /E /I node_modules\\@fortawesome\\fontawesome-free\\webfonts static\\css\\webfonts",
-    "build" : "npm run build:css && npm run build:fa"
+    "build:fa": "copy-node-modules ./node_modules/@fortawesome/fontawesome-free ./static/css --filter=css,webfonts",
+    "build": "npm run build:css && npm run build:fa"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
+    "copy-node-modules": "^1.1.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.4"
   },
