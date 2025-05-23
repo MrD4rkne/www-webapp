@@ -38,8 +38,8 @@ jobs:
         npm install
         npm run build
 
-    - name: Ls
-      run: ls -la
+    - name: Ls static directory
+      run: ls -alh static
 
     - name: Run tests
       env:
