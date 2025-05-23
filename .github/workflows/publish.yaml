@@ -38,13 +38,8 @@ jobs:
         npm install
         npm run build
 
-    - name: Debug project structure
-      run: |
-        ls -la
-        echo "Django version:"
-        python -m django --version
-        echo "Available management commands:"
-        python manage.py help
+    - name: Ls
+      run: ls -la
 
     - name: Run tests
       env:
@@ -67,7 +62,7 @@ jobs:
 
     - name: Generate deployment package
       run: |
-        zip -r deploy.zip . -x ".*" -x "*__pycache__/*" -x "*.git*" -x "*node_modules/*" -x "*.github/*" -x "media/images/*" "static/js/src/*" "static/css/src/*"
+        zip -r deploy.zip . -x ".*" -x "*__pycache__/*" -x "*.git*" -x "*node_modules/*" -x "*.github/*" -x "media/images/*" "static/*"
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
