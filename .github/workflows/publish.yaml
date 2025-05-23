@@ -58,7 +58,7 @@ jobs:
 
     - name: Collect static files (if command exists)
       run: |
-        python manage.py collectstatic
+        python manage.py collectstatic --noinput
 
     - name: Generate deployment package
       run: |

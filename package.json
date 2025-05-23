@@ -2,18 +2,20 @@
   "scripts": {
     "build:tailwind": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --minify",
     "build:css": "npm run build:tailwind",
-    "build:fa": "copy-node-modules ./node_modules/@fortawesome/fontawesome-free ./static/css --filter=css,webfonts",
+    "build:fa:fonts": "node -e \"require('fs').cpSync('./node_modules/@fortawesome/fontawesome-free/webfonts', './static/css/webfonts', { recursive: true })\"",
+    "build:fa:css": "node -e \"require('fs').cpSync('./node_modules/@fortawesome/fontawesome-free/css', './static/css/dist', { recursive: true })\"",
+    "build:fa": "npm run build:fa:css && npm run build:fa:fonts",
     "build": "npm run build:css && npm run build:fa"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
-    "copy-node-modules": "^1.1.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.4"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@tailwindcss/cli": "^4.1.4",
+    "cp": "^0.2.0",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-intersect": "^2.2.0",
     "tailwindcss-motion": "^1.1.0",
