@@ -5,7 +5,8 @@
     "build:fa:fonts": "node -e \"require('fs').cpSync('./node_modules/@fortawesome/fontawesome-free/webfonts', './static/css/webfonts', { recursive: true })\"",
     "build:fa:css": "node -e \"require('fs').cpSync('./node_modules/@fortawesome/fontawesome-free/css', './static/css/dist', { recursive: true })\"",
     "build:fa": "npm run build:fa:css && npm run build:fa:fonts",
-    "build": "npm run build:css && npm run build:fa"
+    "build:ts": "tsc --project tsconfig.json",
+    "build": "npm run build:css && npm run build:fa && npm run build:ts"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
