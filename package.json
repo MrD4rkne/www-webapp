@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "build": "npx tailwindcss -i ./static/src/styles.css -o ./static/dist/output.css --minify",
-    "dev": "npx tailwindcss -i ./static/src/styles.css -o ./static/dist/output.css --watch"
+    "build": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --minify && tsc",
+    "dev": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --watch && tsc --watch"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
@@ -12,6 +12,7 @@
     "@tailwindcss/cli": "^4.1.4",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-intersect": "^2.2.0",
-    "tailwindcss-motion": "^1.1.0"
+    "tailwindcss-motion": "^1.1.0",
+    "typescript": "^5.8.3"
   }
 }
