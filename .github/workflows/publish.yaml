@@ -39,7 +39,7 @@ jobs:
         npm run build
 
     - name: Ls static directory
-      run: ls -alh static
+      run: ls -R static/
 
     - name: Run tests
       env:
