@@ -36,6 +36,7 @@
     const columnsInput = document.getElementById('columns') as HTMLInputElement;
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
+    const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
     const csrfInput = document.getElementById('csrf_token') as HTMLInputElement;
 
     // Get board ID from URL if editing
@@ -56,6 +57,11 @@
     saveBtn.addEventListener('click', (e) => {
         e.preventDefault();
         saveBoard();
+    });
+
+    deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        deleteBoard();
     });
 
     // Initialize color palette
@@ -185,6 +191,37 @@
         }
     }
 
+    async function deleteBoard(): Promise<void> {
+        if (!boardId) {
+            showError('No board to delete');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this board?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/boards/delete/${boardId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfInput.value
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete board');
+            }
+
+            // Redirect to the boards list page
+            window.location.href = '/boards/';
+        } catch (error) {
+            console.error('Error deleting board:', error);
+            showError('Failed to delete board');
+        }
+    }
+
     function initializeBoard(): void {
         try {
             // Load points if there are existing ones
@@ -203,26 +240,26 @@
                             }
                         }));
                     } else {
-                        placedPoints = []; // Reset to empty array if not array
+                        placedPoints = [];
                         console.warn('Stored points is not an array:', parsed);
                     }
                 } catch (parseError) {
-                    placedPoints = []; // Reset to empty array on parse error
+                    placedPoints = [];
                     console.error('Failed to parse stored points:', parseError);
                 }
-                generateGrid();
             } else {
-                placedPoints = []; // Ensure it's initialized as empty array
-                generateGrid();
+                placedPoints = [];
             }
         } catch (error) {
             console.error('Error initializing board:', error);
-            placedPoints = []; // Ensure it's initialized as empty array
+            placedPoints = [];
             showError('Failed to initialize board: invalid data format');
+        }
+        finally {
+            generateGrid();
         }
     }
 
-    // Rest of the functions remain largely unchanged
     function initializeColorPalette(): void {
         const colorOptions = colorPalette.querySelectorAll('.color-option');
         colorOptions.forEach(option => {
@@ -365,16 +402,10 @@
             }
         };
 
-        // Add to placed points
         placedPoints.push(newPoint);
-
-        // Create visual representation
         createDotElement(cell, selectedColor, selectedColorName);
 
-        // Update hidden input
         updatePointsInput();
-
-        // Clear error messages
         clearErrors();
     }
 
@@ -384,10 +415,7 @@
         const x = parseInt(cell.dataset.x || '0');
         const y = parseInt(cell.dataset.y || '0');
 
-        // Find the point data
         draggedPointData = placedPoints.find(p => p.x === x && p.y === y) || null;
-
-        // Set visual drag effect
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', JSON.stringify({ x, y }));
