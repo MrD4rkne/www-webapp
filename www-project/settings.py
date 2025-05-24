@@ -41,6 +41,7 @@ if os.getenv('CSRF_TRUSTED_ORIGINS'):
 INSTALLED_APPS = [
     'images.apps.ImagesConfig',
     'routes.apps.RoutesConfig',
+    'boards.apps.BoardsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
