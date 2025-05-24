@@ -1,6 +1,11 @@
 ﻿{% extends "base.html" %}
 
 {% block content %}
+
+{% load static %}
+
+<script src="{% static 'js/dist/boards.js' %}"></script>
+
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white shadow-md rounded-lg p-6">
         <h1 class="text-2xl font-bold mb-6">{% if background %}Edit{% else %}Create New{% endif %} Background</h1>
@@ -8,23 +13,53 @@
         <!-- Background Details Form -->
         <form id="backgroundForm" method="POST" action="{% if background %}{% url 'edit_background' background.id %}{% else %}{% url 'create_background' %}{% endif %}">
             {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="mb-4 text-red-500">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
                     <label for="name" class="block text-gray-700 font-medium mb-2">Background Name</label>
                     <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           value="{{ background.name|default:'' }}" required>
+                           value="{{ form.name.value|default:'' }}" required>
+                    {% if form.name.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {% for error in form.name.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="rows" class="block text-gray-700 font-medium mb-2">Rows</label>
-                        <input type="number" id="rows" name="rows" min="2" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               value="{{ background.rows|default:'5' }}" required>
+                        <input type="number" id="rows" name="rows" min="{{ MIN_BOARD_HEIGHT }}" max="{{ MAX_BOARD_HEIGHT }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               value="{{ form.rows.value|default:'5' }}" required>
+                        {% if form.rows.errors %}
+                        <div class="text-red-500 text-sm mt-1">
+                            {% for error in form.rows.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div>
                         <label for="columns" class="block text-gray-700 font-medium mb-2">Columns</label>
-                        <input type="number" id="columns" name="columns" min="2" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               value="{{ background.columns|default:'5' }}" required>
+                            <input type="number" id="columns" name="columns" min="{{ MIN_BOARD_WIDTH }}" max="{{ MAX_BOARD_WIDTH }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   value="{{ form.columns.value|default:'5' }}" required>
+                            {% if form.columns.errors %}
+                            <div class="text-red-500 text-sm mt-1">
+                                {% for error in form.columns.errors %}
+                                <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                     </div>
                 </div>
             </div>
@@ -44,7 +79,7 @@
             </div>
 
             <!-- Hidden input to store dot configurations -->
-            <input type="hidden" id="dotsConfiguration" name="dots_config" value="{{ background.dots_config|default:'[]' }}">
+            <input type="hidden" id="points" name="points" value="{{ form.points.value|default:'[]' }}">
         </form>
 
         <!-- Color Selection -->
@@ -71,6 +106,17 @@
             </div>
         </div>
 
+        <!-- Error for point placement -->
+        <div id="errorContainer" class="mb-4 text-red-500 {% if form.points.errors %}{% else %}hidden{% endif %}">
+            {% if form.points.errors %}
+            <ul>
+                {% for error in form.points.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
         <!-- Instructions -->
         <div class="bg-blue-50 p-4 rounded-md text-blue-800">
             <h3 class="font-bold mb-2">Instructions:</h3>
@@ -85,3 +131,5 @@
         </div>
     </div>
 </div>
+
+{% endblock %} runu
