@@ -20,6 +20,7 @@ urlpatterns = [
 
     path('api/routes/', include('routes.api_urls')),
     path('api/images/', include('images.api_urls')),
+    path('api/boards/', include('boards.api_urls')),
 
     path('media/<path:path>', views.protected_media, name='protected_media'),
 

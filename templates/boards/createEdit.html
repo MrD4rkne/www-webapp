@@ -8,11 +8,11 @@
 
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-bold mb-6">{% if background %}Edit{% else %}Create New{% endif %} Background</h1>
+        <h1 class="text-2xl font-bold mb-6">{% if background %}Edit{% else %}Create New{% endif %} Board</h1>
 
         <!-- Background Details Form -->
         <form id="backgroundForm" method="POST" action="{% if background %}{% url 'edit_background' background.id %}{% else %}{% url 'create_background' %}{% endif %}">
-            {% csrf_token %}
+            <input id="csrf_token" type="hidden" value="{% csrf_token %}">
             {% if form.non_field_errors %}
             <div class="mb-4 text-red-500">
                 <ul>

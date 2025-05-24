@@ -38,6 +38,11 @@
                     </a>
                 {% endif %}
 
+                <a href="{% url 'list_backgrounds' %}" class="text-white hover:text-blue-400 flex items-center gap-2">
+                    <i class="fas fa-th"></i>
+                    Boards
+                </a>
+
                 {% if user.is_authenticated and user.is_staff %}
                     <a href="/admin/" class="text-white hover:text-blue-400 flex items-center gap-2">
                         <i class="fas fa-tools"></i>

@@ -37,7 +37,7 @@
                         <div class="p-4 border-b">
                             <div class="flex justify-between items-center">
                                 <h3 class="text-lg font-semibold truncate">{{ board.name }}</h3>
-                                {% if board.is_mine or user == board.user %}
+                                {% if user == board.user %}
                                     <span class="bg-blue-100 text-blue-800 text-xs px-4 py-2 rounded-full">Your Board</span>
                                 {% endif %}
                             </div>
@@ -52,7 +52,7 @@
 {#                                <a href="{% url 'play_game' board_id=board.id %}" class="text-green-600 hover:text-green-800" title="Play">#}
 {#                                    <i class="fas fa-play"></i>#}
 {#                                </a>#}
-                                {% if board.is_mine or user == board.user %}
+                                {% if user == board.user %}
                                     <a href="{% url 'edit_background' board_id=board.id %}" class="text-blue-600 hover:text-blue-800" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
