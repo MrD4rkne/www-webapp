@@ -11,6 +11,8 @@ static/css/webfonts/
 # Static - generated files
 
 static/dist/
+static/webfonts/
+staticfiles/
 
 # Node
 node_modules/
