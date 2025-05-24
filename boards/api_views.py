@@ -20,7 +20,7 @@ from .serializers import GameBoardSerializer
 def create_background_view(request):
     serializer = GameBoardSerializer(data=request.data)
     if serializer.is_valid():
-        game_board = serializer.save(user=request.user)
+        serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -28,7 +28,10 @@ def create_background_view(request):
     request=GameBoardSerializer,
     responses={
         200: GameBoardSerializer,
-        400: OpenApiResponse(description="Invalid data"),
+        400: OpenApiResponse(
+            description="Invalid data",
+            response=GameBoardSerializer.errors
+        ),
         404: OpenApiResponse(description="Game board not found"),
     },
     description="Edit an existing game board.",

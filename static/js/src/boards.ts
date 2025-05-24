@@ -11,12 +11,19 @@
         color: PointColor;
     }
 
+    interface APIResponse {
+        success: boolean;
+        message?: string;
+        data?: any;
+    }
+
     // State variables
     let selectedColor: string | null = null;
     let selectedColorName: string | null = null;
     let placedPoints: Point[] = [];
     let draggedPoint: HTMLElement | null = null;
     let draggedPointData: Point | null = null;
+    let boardId: string | null = null;
 
     // DOM elements
     const generateGridBtn = document.getElementById('generateGridBtn') as HTMLButtonElement;
@@ -27,6 +34,17 @@
     const errorContainer = document.getElementById('errorContainer') as HTMLDivElement;
     const rowsInput = document.getElementById('rows') as HTMLInputElement;
     const columnsInput = document.getElementById('columns') as HTMLInputElement;
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
+    const csrfInput = document.getElementById('csrf_token') as HTMLInputElement;
+
+    // Get board ID from URL if editing
+    const urlPath = window.location.pathname;
+    const editMatch = urlPath.match(/\/edit\/([^\/]+)/);
+    if (editMatch && editMatch[1]) {
+        boardId = editMatch[1];
+        loadBoardData(boardId);
+    }
 
     // Initialize the grid and load existing points
     initializeBoard();
@@ -34,10 +52,139 @@
     // Event listeners
     generateGridBtn.addEventListener('click', generateGrid);
 
+    // Replace form submission with API call
+    saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        saveBoard();
+    });
+
     // Initialize color palette
     initializeColorPalette();
 
     // Functions
+    async function loadBoardData(id: string): Promise<void> {
+        try {
+            const response = await fetch(`/api/boards/${id}/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfInput.value
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch board data');
+            }
+
+            const data = await response.json();
+
+            // Populate form fields
+            nameInput.value = data.name;
+            rowsInput.value = data.rows;
+            columnsInput.value = data.columns;
+            pointsInput.value = JSON.stringify(data.points);
+
+            // Initialize with loaded data
+            initializeBoard();
+        } catch (error) {
+            console.error('Error loading board data:', error);
+            showError('Failed to load board data');
+        }
+    }
+
+    async function saveBoard(): Promise<void> {
+        clearErrors();
+
+        // Validate required fields
+        if (!nameInput.value.trim()) {
+            showError('Board name is required');
+            return;
+        }
+
+        const rows = parseInt(rowsInput.value);
+        const columns = parseInt(columnsInput.value);
+
+        if (isNaN(rows) || isNaN(columns) || rows <= 0 || columns <= 0) {
+            showError('Valid rows and columns are required');
+            return;
+        }
+
+        // Validate that each color has exactly 2 points
+        const colorCounts: Record<string, number> = {};
+        placedPoints.forEach(point => {
+            const color = point.color.hex_value;
+            colorCounts[color] = (colorCounts[color] || 0) + 1;
+        });
+
+        for (const color in colorCounts) {
+            if (colorCounts[color] !== 2) {
+                showError(`Each color must have exactly 2 points. ${getColorNameFromHex(color)} has ${colorCounts[color]} point(s).`);
+                return;
+            }
+        }
+
+        for (const point of placedPoints) {
+            if (point.x < 0 || point.x >= columns || point.y < 0 || point.y >= rows) {
+                showError(`Point (${point.x}, ${point.y}) is out of bounds for the grid size ${columns}x${rows}.`);
+                return;
+            }
+        }
+
+        try {
+            // Prepare request data
+            const boardData = {
+                name: nameInput.value,
+                rows: rows,
+                columns: columns,
+                points: placedPoints
+            };
+
+            // Determine if creating or editing
+            const url = boardId
+                ? `/api/boards/edit/${boardId}/`
+                : '/api/boards/create/';
+
+            const method = boardId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfInput.value
+                },
+                body: JSON.stringify(boardData)
+            });
+
+            const result = await response.json();
+            console.log('API Response:', result);
+
+            if (!response.ok) {
+                for (const error of result || []) {
+                    showError(error);
+                }
+
+                throw new Error('API error occurred while saving the board.');
+            }
+
+            // Pop up a success message
+            alert('Board saved successfully!');
+
+            // Reload
+            if (!boardId) {
+                // If creating a new board, redirect to the edit page
+                const newBoardId = result.id;
+                window.location.href = `/boards/edit/${newBoardId}/`;
+            } else {
+                // If editing, just reload the current page
+                window.location.reload();
+            }
+
+
+        } catch (error) {
+            alert('Error updating board' + (error instanceof Error ? `: ${error.message}` : ''));
+        }
+    }
+
     function initializeBoard(): void {
         try {
             // Load points if there are existing ones
@@ -73,10 +220,9 @@
             placedPoints = []; // Ensure it's initialized as empty array
             showError('Failed to initialize board: invalid data format');
         }
-
-        console.log('Placed points:', placedPoints);
     }
 
+    // Rest of the functions remain largely unchanged
     function initializeColorPalette(): void {
         const colorOptions = colorPalette.querySelectorAll('.color-option');
         colorOptions.forEach(option => {
@@ -296,6 +442,16 @@
 
     function showError(message: string): void {
         errorContainer.classList.remove('hidden');
+        if (errorContainer.innerHTML) {
+            const ul = errorContainer.querySelector('ul');
+            if (ul) {
+                const li = document.createElement('li');
+                li.textContent = message;
+                ul.appendChild(li);
+                return;
+            }
+        }
+
         errorContainer.innerHTML = `<ul><li>${message}</li></ul>`;
     }
 

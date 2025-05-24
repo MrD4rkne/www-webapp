@@ -8,58 +8,32 @@
 
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-bold mb-6">{% if background %}Edit{% else %}Create New{% endif %} Board</h1>
+        <h1 class="text-2xl font-bold mb-6">{% if game_board %}Edit{% else %}Create New{% endif %} Board</h1>
 
         <!-- Background Details Form -->
-        <form id="backgroundForm" method="POST" action="{% if background %}{% url 'edit_background' background.id %}{% else %}{% url 'create_background' %}{% endif %}">
-            <input id="csrf_token" type="hidden" value="{% csrf_token %}">
-            {% if form.non_field_errors %}
-            <div class="mb-4 text-red-500">
-                <ul>
-                    {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                    {% endfor %}
-                </ul>
+        <form id="backgroundForm">
+            <input id="csrf_token" type="hidden" value="{{ csrf_token }}">
+            <div id="errorContainer" class="mb-4 text-red-500 hidden">
+                <!-- Error messages will appear here -->
             </div>
-            {% endif %}
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="name" class="block text-gray-700 font-medium mb-2">Background Name</label>
+                    <label for="name" class="block text-gray-700 font-medium mb-2">Board Name</label>
                     <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           value="{{ form.name.value|default:'' }}" required>
-                    {% if form.name.errors %}
-                    <div class="text-red-500 text-sm mt-1">
-                        {% for error in form.name.errors %}
-                        <p>{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
+                           value="{{ game_board.name|default:'' }}" required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="rows" class="block text-gray-700 font-medium mb-2">Rows</label>
-                        <input type="number" id="rows" name="rows" min="{{ MIN_BOARD_HEIGHT }}" max="{{ MAX_BOARD_HEIGHT }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               value="{{ form.rows.value|default:'5' }}" required>
-                        {% if form.rows.errors %}
-                        <div class="text-red-500 text-sm mt-1">
-                            {% for error in form.rows.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+                        <input type="number" id="rows" name="rows" min="3" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               value="{{ game_board.rows|default:'5' }}" required>
                     </div>
                     <div>
                         <label for="columns" class="block text-gray-700 font-medium mb-2">Columns</label>
-                            <input type="number" id="columns" name="columns" min="{{ MIN_BOARD_WIDTH }}" max="{{ MAX_BOARD_WIDTH }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                   value="{{ form.columns.value|default:'5' }}" required>
-                            {% if form.columns.errors %}
-                            <div class="text-red-500 text-sm mt-1">
-                                {% for error in form.columns.errors %}
-                                <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
+                            <input type="number" id="columns" name="columns" min="3" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   value="{{ game_board.columns|default:'5' }}" required>
                     </div>
                 </div>
             </div>
@@ -68,18 +42,18 @@
                 <button type="button" id="generateGridBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     Generate Grid
                 </button>
-                <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
-                    Save Background
+                <button type="button" id="saveBtn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Save Board
                 </button>
-                {% if background %}
-                <a href="{% url 'delete_background' background.id %}" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                {% if game_board %}
+                <button type="button" id="deleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
                     Delete
-                </a>
+                </button>
                 {% endif %}
             </div>
 
             <!-- Hidden input to store dot configurations -->
-            <input type="hidden" id="points" name="points" value="{{ form.points.value|default:'[]' }}">
+            <input type="hidden" id="points" name="points" value="{{ game_board.points_json|default:'[]' }}">
         </form>
 
         <!-- Color Selection -->
@@ -106,17 +80,6 @@
             </div>
         </div>
 
-        <!-- Error for point placement -->
-        <div id="errorContainer" class="mb-4 text-red-500 {% if form.points.errors %}{% else %}hidden{% endif %}">
-            {% if form.points.errors %}
-            <ul>
-                {% for error in form.points.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-
         <!-- Instructions -->
         <div class="bg-blue-50 p-4 rounded-md text-blue-800">
             <h3 class="font-bold mb-2">Instructions:</h3>
@@ -126,10 +89,15 @@
                 <li>Select a color from the palette</li>
                 <li>Place exactly two dots of the same color by clicking on grid cells</li>
                 <li>Continue until you've placed all desired pairs</li>
-                <li>Click "Save Background" when finished</li>
+                <li>Click "Save Board" when finished</li>
             </ol>
+
+            <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800">
+                <p class="font-bold">Important Note:</p>
+                <p>Changing board dimensions after users have created paths on it will potentially invalidate their saved paths.</p>
+            </div>
         </div>
     </div>
 </div>
 
-{% endblock %} runu
+{% endblock %}
