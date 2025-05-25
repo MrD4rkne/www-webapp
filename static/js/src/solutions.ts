@@ -48,6 +48,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const cell = dot.parentElement as HTMLElement;
         const color = dot.getAttribute('data-color') || '';
 
+        // Check if the dot is already being dragged
+        if (isDragging || !cell || !color) {
+            return;
+        }
+
+        // Check if the dot is already part of a path
+        if (paths.some(path => path.cells.some(c => c.x === parseInt(cell.dataset.x || '0') && c.y === parseInt(cell.dataset.y || '0')))) {
+            clearErrors();
+            showError("This dot is already part of a path");
+            return;
+        }
+
         startPoint = dot;
         isDragging = true;
 
@@ -90,13 +102,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Check if this would be a new cell in our path
         const lastCell = currentPath.cells[currentPath.cells.length - 1];
-        if (lastCell.x !== cellX || lastCell.y !== cellY) {
-            // Only add if adjacent to last cell (no diagonal moves)
-            if (Math.abs(lastCell.x - cellX) + Math.abs(lastCell.y - cellY) === 1) {
-                currentPath.cells.push({ x: cellX, y: cellY });
-                drawCurrentPath();
-            }
+
+        // Only add if adjacent to last cell (no diagonal moves)
+        if (Math.abs(lastCell.x - cellX) + Math.abs(lastCell.y - cellY) !== 1) {
+            return;
         }
+
+        // Check if the cell is already in the current path
+        if (currentPath.cells.some(c => c.x === cellX && c.y === cellY)) {
+            return;
+        }
+
+        // Check if the cell is already part of another path
+        if (paths.some(path => path.cells.some(c => c.x === cellX && c.y === cellY))) {
+            return;
+        }
+
+        // Check if the cell is not occupied by points
+        const cellElement = gridContainer.querySelector(`.grid-cell[data-x="${cellX}"][data-y="${cellY}"]`);
+        if (!cellElement || cellElement.querySelector('.point-dot')) {
+            return;
+        }
+
+        currentPath.cells.push({ x: cellX, y: cellY });
+        drawCurrentPath();
     }
 
     function handleMouseUp(e: MouseEvent) {
@@ -130,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetDrag();
                 return;
             }
+
+            currentPath.cells.push({ x: endX, y: endY });
+            drawCurrentPath();
 
             // Set the end point
             currentPath.endX = endX;
