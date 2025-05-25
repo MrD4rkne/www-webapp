@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const columnsInput = document.getElementById('columns') as HTMLInputElement;
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
-    const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
     const csrfInput = document.getElementById('csrf_token') as HTMLInputElement;
 
     // Get board ID from URL if editing
@@ -44,10 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBoard();
     });
 
-    deleteBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        deleteBoard();
-    });
+    const deleteBtn = document.getElementById('deleteBtn') as HTMLButtonElement;
+    if( deleteBtn) {
+        deleteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            deleteBoard();
+        });
+    }
 
     // Initialize color palette
     initializeColorPalette();
