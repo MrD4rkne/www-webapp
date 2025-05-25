@@ -11,11 +11,14 @@
     {% load static %}
     <link
       rel="stylesheet"
-      href="{% static 'dist/output.css' %}"
+      href="{% static 'css/dist/styles.css' %}"
     />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'css/dist/all.min.css' %}">
 
     <script defer src="https://unpkg.com/tailwindcss-intersect@2.0.0/dist/observer.min.js"></script>
+
+    <script src="{% static 'js/dist/hello.js' %}" defer></script>
 </head>
 <body class="bg-white text-gray-900 p-0 m-0 flex flex-col min-h-screen">
 
@@ -34,6 +37,11 @@
                         Routes
                     </a>
                 {% endif %}
+
+                <a href="{% url 'list_backgrounds' %}" class="text-white hover:text-blue-400 flex items-center gap-2">
+                    <i class="fas fa-th"></i>
+                    Boards
+                </a>
 
                 {% if user.is_authenticated and user.is_staff %}
                     <a href="/admin/" class="text-white hover:text-blue-400 flex items-center gap-2">

@@ -1,0 +1,103 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+
+{% load static %}
+
+<script type="module" src="{% static 'js/dist/boards.js' %}"></script>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">{% if game_board %}Edit{% else %}Create New{% endif %} Board</h1>
+
+        <!-- Background Details Form -->
+        <form id="backgroundForm">
+            <input id="csrf_token" type="hidden" value="{{ csrf_token }}">
+            <div id="errorContainer" class="mb-4 text-red-500 hidden">
+                <!-- Error messages will appear here -->
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="name" class="block text-gray-700 font-medium mb-2">Board Name</label>
+                    <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           value="{{ game_board.name|default:'' }}" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="rows" class="block text-gray-700 font-medium mb-2">Rows</label>
+                        <input type="number" id="rows" name="rows" min="3" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               value="{{ game_board.rows|default:'5' }}" required>
+                    </div>
+                    <div>
+                        <label for="columns" class="block text-gray-700 font-medium mb-2">Columns</label>
+                            <input type="number" id="columns" name="columns" min="3" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   value="{{ game_board.columns|default:'5' }}" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mb-6">
+                <button type="button" id="generateGridBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Generate Grid
+                </button>
+                <button type="button" id="saveBtn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Save Board
+                </button>
+                {% if game_board %}
+                <button type="button" id="deleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Hidden input to store dot configurations -->
+            <input type="hidden" id="points" name="points" value="{{ game_board.points_json|default:'[]' }}">
+        </form>
+
+        <!-- Color Selection -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-3">Select Color for Pair</h2>
+            <div class="flex flex-wrap gap-3" id="colorPalette">
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#FF0000" style="background-color: #FF0000;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#00FF00" style="background-color: #00FF00;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#0000FF" style="background-color: #0000FF;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#FFFF00" style="background-color: #FFFF00;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#FF00FF" style="background-color: #FF00FF;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#00FFFF" style="background-color: #00FFFF;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#FFA500" style="background-color: #FFA500;"></div>
+                <div class="color-option w-8 h-8 rounded-full cursor-pointer border-2 border-transparent" data-color="#800080" style="background-color: #800080;"></div>
+            </div>
+            <p class="mt-2 text-sm text-gray-600">Selected color: <span id="selectedColorDisplay">None</span></p>
+        </div>
+
+        <!-- Grid Container -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-3">Grid</h2>
+            <div class="bg-gray-100 p-4 rounded-md">
+                <div id="gridContainer" class="grid-container"></div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-blue-50 p-4 rounded-md text-blue-800">
+            <h3 class="font-bold mb-2">Instructions:</h3>
+            <ol class="list-decimal ml-5 space-y-1">
+                <li>Enter grid dimensions (rows and columns)</li>
+                <li>Click "Generate Grid" to create your grid</li>
+                <li>Select a color from the palette</li>
+                <li>Place exactly two dots of the same color by clicking on grid cells</li>
+                <li>Continue until you've placed all desired pairs</li>
+                <li>Click "Save Board" when finished</li>
+            </ol>
+
+            <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800">
+                <p class="font-bold">Important Note:</p>
+                <p>Changing board dimensions after users have created paths on it will potentially invalidate their saved paths.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

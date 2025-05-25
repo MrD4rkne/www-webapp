@@ -1,0 +1,83 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+
+    {% load static %}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Game Boards</h1>
+            <a href="{% url 'create_background' %}" class="px-4 py-2 bg-blue-200 text-white rounded-md hover:bg-blue-100 transition duration-200">
+                <i class="fas fa-plus mr-2"></i>Create New Board
+            </a>
+        </div>
+
+        {% url 'list_backgrounds' as list_backgrounds_url %}
+        {% url 'list_my_backgrounds' as list_my_backgrounds_url %}
+
+        <!-- Filters -->
+        <div class="flex mb-6 space-x-4">
+            <a href="{% url 'list_backgrounds' %}"
+               class="px-6 py-3 rounded-lg text-sm font-medium transition duration-200
+                      {% if request.path == list_backgrounds_url %}bg-blue-200 text-white shadow-lg{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                All Boards
+            </a>
+         {% if user.is_authenticated %}
+            <a href="{% url 'list_my_backgrounds' %}"
+               class="px-6 py-3 rounded-lg text-sm font-medium transition duration-200
+                      {% if request.path == list_my_backgrounds_url %}bg-blue-200 text-white shadow-lg{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                My Boards
+            </a>
+            <a href="{% url 'list_solutions' %}"
+                class="px-6 py-3 rounded-lg text-sm font-medium transition duration-200
+                       {% if request.path == list_my_backgrounds_url %}bg-blue-200 text-white shadow-lg{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                My Solutions
+            </a>
+        {% endif %}
+        </div>
+
+        {% if game_boards %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for board in game_boards %}
+                    <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition duration-200 overflow-hidden">
+                        <div class="p-4 border-b">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold truncate">{{ board.name }}</h3>
+                                {% if user == board.user %}
+                                    <span class="bg-blue-100 text-blue-800 text-xs px-4 py-2 rounded-full">Your Board</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-gray-500 text-sm mt-1">{{ board.rows }}×{{ board.columns }} grid</p>
+                        </div>
+                        
+                        <div class="p-4 flex justify-between">
+                            <div class="text-xs text-gray-500">
+                                By: {{ board.user.username }}
+                            </div>
+                            <div class="flex space-x-2">
+                                <a href="{% url 'create_solution' board_id=board.id %}" class="text-green-600 hover:text-green-800" title="Play">
+                                    <i class="fas fa-play"></i>
+                                </a>
+                                {% if user == board.user %}
+                                    <a href="{% url 'edit_background' board_id=board.id %}" class="text-blue-600 hover:text-blue-800" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-gray-100 rounded-lg p-10 text-center shadow-md">
+                <p class="text-xl text-gray-600 font-medium mb-6">No game boards found</p>
+                <a href="{% url 'create_background' %}" class="inline-block px-6 py-3 bg-blue-200 text-white text-sm font-semibold rounded-lg shadow hover:bg-blue-400 transition duration-300">
+                    Create your first board
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
