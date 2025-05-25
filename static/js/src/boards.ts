@@ -1,22 +1,7 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
-    // Type definitions
-    interface PointColor {
-        name: string;
-        hex_value: string;
-    }
+﻿import { generateBoard, createDotElement, Point} from './boardsCreator.js';
+import { parseErrorResponse, getBoardById} from "./api.js";
 
-    interface Point {
-        x: number;
-        y: number;
-        color: PointColor;
-    }
-
-    interface APIResponse {
-        success: boolean;
-        message?: string;
-        data?: any;
-    }
-
+document.addEventListener('DOMContentLoaded', () => {
     // State variables
     let selectedColor: string | null = null;
     let selectedColorName: string | null = null;
@@ -70,31 +55,26 @@
     // Functions
     async function loadBoardData(id: string): Promise<void> {
         try {
-            const response = await fetch(`/api/boards/${id}/`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfInput.value
+            const response = await getBoardById(id);
+            if (Array.isArray(response)) {
+                // If response is an array, it contains error messages
+                for (const error of response) {
+                    showError(error);
                 }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch board data');
+                return;
             }
 
-            const data = await response.json();
-
             // Populate form fields
-            nameInput.value = data.name;
-            rowsInput.value = data.rows;
-            columnsInput.value = data.columns;
-            pointsInput.value = JSON.stringify(data.points);
+            nameInput.value = response.name;
+            rowsInput.value = response.rows.toString();
+            columnsInput.value = response.columns.toString();
+            pointsInput.value = JSON.stringify(response.points);
 
             // Initialize with loaded data
             initializeBoard();
         } catch (error) {
             console.error('Error loading board data:', error);
-            showError('Failed to load board data');
+            alert('Failed to load board data. Please refresh the page or check the console for details.');
         }
     }
 
@@ -165,7 +145,8 @@
             console.log('API Response:', result);
 
             if (!response.ok) {
-                for (const error of result || []) {
+                const errorMessages = parseErrorResponse(result);
+                for(const error of errorMessages) {
                     showError(error);
                 }
 
@@ -193,7 +174,7 @@
 
     async function deleteBoard(): Promise<void> {
         if (!boardId) {
-            showError('No board to delete');
+            alert('No board ID found for deletion');
             return;
         }
 
@@ -211,14 +192,14 @@
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete board');
+                throw new Error('Failed to delete board. Make sure the board exists - refresh the page if needed.');
             }
 
             // Redirect to the boards list page
             window.location.href = '/boards/';
         } catch (error) {
             console.error('Error deleting board:', error);
-            showError('Failed to delete board');
+            alert('Failed to delete board. Please check the console for details.');
         }
     }
 
@@ -299,74 +280,36 @@
     }
 
     function generateGrid(): void {
-        const rows = parseInt(rowsInput.value) || 5;
-        const columns = parseInt(columnsInput.value) || 5;
+        let pointElems = generateBoard(gridContainer, placedPoints, parseInt(rowsInput.value) || 5, parseInt(columnsInput.value) || 5);
 
-        // Clear the grid
-        gridContainer.innerHTML = '';
+        // Add events to cells
+        let cells = gridContainer.querySelectorAll('.grid-cell');
+        cells.forEach(cell => {
+            if (!(cell instanceof HTMLElement)) return;
 
-        // Set the grid dimensions
-        gridContainer.style.display = 'grid';
-        gridContainer.style.gridTemplateColumns = `repeat(${columns}, 40px)`;
-        gridContainer.style.gridTemplateRows = `repeat(${rows}, 40px)`;
-        gridContainer.style.gap = '4px';
+            const x = parseInt(cell.dataset.x || '0');
+            const y = parseInt(cell.dataset.y || '0');
 
-        // Create cells
-        for (let y = 0; y < rows; y++) {
-            for (let x = 0; x < columns; x++) {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell bg-white border border-gray-300 rounded-sm flex items-center justify-center';
-                cell.dataset.x = x.toString();
-                cell.dataset.y = y.toString();
+            // Add click handler for point placement
+            cell.addEventListener('click', (e) => handleCellClick(e, x, y));
 
-                // Add click handler for point placement
-                cell.addEventListener('click', (e) => handleCellClick(e, x, y));
-
-                // Add drop zone for drag-and-drop
-                cell.addEventListener('dragover', allowDrop);
-                cell.addEventListener('drop', (e) => handleDrop(e, x, y));
-
-                gridContainer.appendChild(cell);
-            }
-        }
-
-        // Render existing points
-        renderPoints();
-    }
-
-    function renderPoints(): void {
-        // Remove all existing points from the grid
-        document.querySelectorAll('.point-dot').forEach(dot => dot.remove());
-
-        // Place points on the grid
-        placedPoints.forEach(point => {
-            const cell = getCellByCoordinates(point.x, point.y);
-            if (cell) {
-                createDotElement(cell, point.color.hex_value, point.color.name);
-            }
+            // Add drop zone for drag-and-drop
+            cell.addEventListener('dragover', allowDrop);
+            cell.addEventListener('drop', (e) => handleDrop(e, x, y));
         });
 
-        // Update the hidden input
+        // Add drag events to existing points elements
+        pointElems.forEach(dot => {
+            dot.addEventListener('dragstart', handleDragStart);
+            dot.setAttribute('draggable', 'true');
+        });
+
         updatePointsInput();
-    }
-
-    function createDotElement(cell: HTMLElement, color: string, colorName: string): HTMLElement {
-        const dot = document.createElement('div');
-        dot.className = 'point-dot rounded-full w-8 h-8 cursor-move';
-        dot.style.backgroundColor = color;
-        dot.setAttribute('draggable', 'true');
-        dot.setAttribute('data-color', color);
-        dot.setAttribute('data-color-name', colorName);
-
-        // Drag events
-        dot.addEventListener('dragstart', handleDragStart);
-
-        cell.appendChild(dot);
-        return dot;
     }
 
     function handleCellClick(e: MouseEvent, x: number, y: number): void {
         if (!selectedColor || !selectedColorName) {
+            clearErrors();
             showError('Please select a color first');
             return;
         }
@@ -388,6 +331,7 @@
         // Check if we already have 2 points with this color
         const pointsWithColor = placedPoints.filter(p => p.color.hex_value === selectedColor).length;
         if (pointsWithColor >= 2) {
+            clearErrors();
             showError(`You already placed 2 dots with color ${selectedColorName}`);
             return;
         }
@@ -404,6 +348,8 @@
 
         placedPoints.push(newPoint);
         createDotElement(cell, selectedColor, selectedColorName);
+        cell.querySelector('.point-dot')?.setAttribute('draggable', 'true');
+        (cell.querySelector('.point-dot') as HTMLDivElement)?.addEventListener('dragstart', handleDragStart);
 
         updatePointsInput();
         clearErrors();
@@ -458,10 +404,6 @@
         // Clear dragged point reference
         draggedPoint = null;
         draggedPointData = null;
-    }
-
-    function getCellByCoordinates(x: number, y: number): HTMLElement | null {
-        return document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
     }
 
     function updatePointsInput(): void {

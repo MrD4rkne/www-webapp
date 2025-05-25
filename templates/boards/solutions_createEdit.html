@@ -1,0 +1,64 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+
+{% load static %}
+
+<script type="module" src="{% static 'js/dist/solutions.js' %}"></script>
+
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">{% if solution %}Edit{% else %}Create New{% endif %} Solution</h1>
+
+        <input type="hidden" id="game_board_id" value="{{ game_board.id }}">
+        <input type="hidden" id="name" value="{{ game_board.name|escapejs }}">
+        <input type="hidden" id="rows" value="{{ game_board.rows }}">
+        <input type="hidden" id="cols" value="{{ game_board.columns }}">
+        <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" id="points" value="{{ game_board.points|escapejs }}">
+
+        <!-- Background Details Form -->
+        <form id="backgroundForm">
+            <input id="csrf_token" type="hidden" value="{{ csrf_token }}">
+            <div id="errorContainer" class="mb-4 text-red-500 hidden">
+                <!-- Error messages will appear here -->
+            </div>
+
+            <div class="grid grid-cols-1 mb-6">
+                <div>
+                    <label for="name" class="block text-gray-700 font-medium mb-2">Board Name</label>
+                    <label for="name" class="block text-gray-700 font-medium mb-2">{{ game_board.name }}</label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-4 mb-6">
+                <button type="button" id="saveBtn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    Save solution
+                </button>
+            </div>
+        </form>
+
+        <!-- Grid Container -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-3">Grid</h2>
+            <div class="bg-gray-100 p-4 rounded-md">
+                <div id="gridContainer" class="grid-container"></div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-blue-50 p-4 rounded-md text-blue-800">
+            <h3 class="font-bold mb-2">Instructions:</h3>
+            <ol class="list-decimal ml-5 space-y-1">
+                <li>Click on a dot to select it as the start point of your path.</li>
+                <li>Drag to another dot to create a path between the two dots.</li>
+                <li>Click on a dot to select it as the end point of your path.</li>
+                <li>Click on the "Save solution" button to save your path.</li>
+            </ol>
+
+            <p class="mt-2">Note: You can only create paths between dots of the same color.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
