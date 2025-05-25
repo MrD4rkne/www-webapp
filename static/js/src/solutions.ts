@@ -20,6 +20,7 @@ interface Path {
 interface Solution {
     paths: Path[];
     id: string;
+    name: string;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -388,10 +389,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const nameInput = document.getElementById('solution_name') as HTMLInputElement;
+        if (!nameInput || !nameInput.value.trim()) {
+            showError("Solution name cannot be empty");
+            return;
+        }
+
         // Create solution data
         let solutionData: any = {
             board_id: board.id,
-            name: "solution",
+            name: nameInput.value.trim(),
             paths: paths.map(p => ({
                 start: {x: p.start.x, y: p.start.y},
                 end: {x: p.end.x, y: p.end.y},
@@ -453,26 +460,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSolutionData(columns: number, rows: number): Solution {
-        const pathsJson = (document.getElementById('solution_paths') as HTMLInputElement).value;
-        const paths: Path[] = decodeJSON(pathsJson) || [];
+        try {
+            const pathsJson = (document.getElementById('solution_paths') as HTMLInputElement).value;
+            const paths: Path[] = decodeJSON(pathsJson) || [];
 
-        const solution: Solution = {
-            paths: paths,
-            id: (document.getElementById('solution_id') as HTMLInputElement).value || ''
-        };
+            const solution: Solution = {
+                paths: paths,
+                id: (document.getElementById('solution_id') as HTMLInputElement).value || '',
+                name: (document.getElementById('solution_name') as HTMLInputElement).value || ''
+            };
 
-        console.log('Loaded solution:', solution);
+            console.log('Loaded solution:', solution);
 
-        // Render existing paths on the grid
-        paths.forEach(path => {
-            currentPath = path;
-            drawCurrentPath();
-            finalizeCurrentPath();
-        });
+            // Render existing paths on the grid
+            paths.forEach(path => {
+                currentPath = path;
+                drawCurrentPath();
+                finalizeCurrentPath();
+            });
 
-        resetDrag();
+            resetDrag();
 
-        return solution;
+            return solution;
+
+        } catch (error) {
+            console.error('Failed to load solution paths:', error);
+            showError('Invalid solution paths format');
+            return { paths: [], id: '', name: '' };
+        }
     }
 
 });

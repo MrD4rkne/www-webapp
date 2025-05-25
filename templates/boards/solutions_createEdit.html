@@ -28,8 +28,12 @@
 
             <div class="grid grid-cols-1 mb-6">
                 <div>
-                    <label for="name" class="block text-gray-700 font-medium mb-2">Board Name</label>
-                    <label for="name" class="block text-gray-700 font-medium mb-2">{{ game_board.name }}</label>
+                    <label class="block text-gray-700 font-medium mb-2">Board Name</label>
+                    <label class="block text-gray-700 font-medium mb-2">{{ game_board.name }}</label>
+                </div>
+                <div>
+                    <label for="solution_name" class="block text-gray-700 font-medium mb-2">Solution Name</label>
+                    <input type="text" id="solution_name" name="solution_name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter solution name" value="{{ solution.name|default_if_none:'' }}">
                 </div>
             </div>
 

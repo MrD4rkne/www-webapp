@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Determine if creating or editing
             const url = boardId
                 ? `/api/boards/${boardId}`
-                : '/api/boards';
+                : '/api/boards/';
 
             const method = boardId ? 'PUT' : 'POST';
 
