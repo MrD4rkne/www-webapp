@@ -102,3 +102,22 @@ class GameBoard(models.Model):
         verbose_name = 'Game Board'
         verbose_name_plural = 'Game Boards'
         ordering = ['-id']
+
+class Path:
+    points: list[Point]
+    color: Color
+
+    def __init__(self, points: list[Point], color: Color):
+        self.points = points
+        self.color = color
+
+    def __str__(self):
+        return f"Path({self.color.name}, {len(self.points)} points)"
+
+class Solution(models.Model):
+    id: uuid.UUID
+    game_board: models.ForeignKey(GameBoard, on_delete=models.CASCADE, related_name='solutions')
+    paths: list[Path]
+    models.ForeignKey(
+        'auth.User', on_delete=models.CASCADE, related_name='solutions'
+    )
