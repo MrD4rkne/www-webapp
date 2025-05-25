@@ -36,6 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
         dots.forEach(dot => {
             if(!(dot instanceof HTMLElement)) return;
             dot.addEventListener('mousedown', handleDotMouseDown);
+            dot.addEventListener('dblclick', (e: MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const cell = dot.parentElement as HTMLElement;
+
+                // Check if the dot is already part of a path
+                const path = paths.find(path => path.cells.some(c => c.x === parseInt(cell.dataset.x || '0') && c.y === parseInt(cell.dataset.y || '0')));
+                if (!path) {
+                    throw new Error("Dot is not part of any path");
+                }
+
+                removePath(path);
+            });
         });
 
         // Add mousemove and mouseup to document
@@ -128,6 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
         drawCurrentPath();
     }
 
+    function removePath(path: Path) {
+        // Remove the path from the grid
+        if (path.element) {
+            path.element.remove();
+        }
+
+        // Remove from paths array
+        paths = paths.filter(p => p !== path);
+    }
+
     function handleMouseUp(e: MouseEvent) {
         if (!isDragging || !currentPath || !startPoint) {
             resetDrag();
@@ -154,7 +177,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const endY = parseInt(endCell.dataset.y || '0');
 
             if (currentPath.startX === endX && currentPath.startY === endY) {
+                clearErrors();
                 showError("Cannot connect a dot to itself");
+                clearCurrentPath();
+                resetDrag();
+                return;
+            }
+
+            // Check if last element on the path is in the neighborhood of the end dot
+            const lastCell = currentPath.cells[currentPath.cells.length - 1];
+            if (Math.abs(lastCell.x - endX) + Math.abs(lastCell.y - endY) !== 1) {
+                clearErrors();
+                showError("End dot must be adjacent to the last cell of the path");
                 clearCurrentPath();
                 resetDrag();
                 return;
@@ -188,9 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function isPathCrossing(newPath: Path): boolean {
         // Check each segment of the new path against every segment of all existing paths
         for (const existingPath of paths) {
-            // Skip same color paths as they can't intersect meaningfully
-            if (existingPath.color === newPath.color) continue;
-
             // Check for segment intersections
             for (let i = 1; i < newPath.cells.length; i++) {
                 const newSegStart = newPath.cells[i-1];
@@ -218,10 +249,6 @@ function doSegmentsIntersect(
         p1x: number, p1y: number, p2x: number, p2y: number,
         p3x: number, p3y: number, p4x: number, p4y: number
     ): boolean {
-        // Check if two line segments intersect
-        // For this grid-based use case, we can simplify:
-        // If both segments are vertical or both horizontal, they don't intersect
-        // If one is vertical and one is horizontal, check if they cross
 
         const isFirstVertical = p1x === p2x;
         const isSecondVertical = p3x === p4x;
@@ -317,6 +344,7 @@ function doSegmentsIntersect(
         const path = currentPath.element.querySelector("path");
         if (path) {
             path.setAttribute("stroke-opacity", "1");
+            path.setAttribute("stroke-width", "3");
         }
     }
 
