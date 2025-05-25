@@ -1,5 +1,5 @@
 import uuid
-
+from django.conf import settings
 from django.db import models
 
 class Point:
@@ -25,11 +25,9 @@ class Point:
             raise ValueError("Coordinates must be non-negative integers.")
 
 class Color:
-    name: str
     hex_value: str
 
-    def __init__(self, name: str, hex_value: str):
-        self.name = name
+    def __init__(self, hex_value: str):
         self.hex_value = hex_value
 
     def __str__(self):
@@ -41,8 +39,8 @@ class Color:
         ordering = ['name']
 
     def validate(self):
-        if not isinstance(self.name, str) or not isinstance(self.hex_value, str):
-            raise ValueError("Color name and hex value must be strings.")
+        if not isinstance(self.hex_value, str):
+            raise ValueError("Hex value must be string.")
         if not self.hex_value.startswith('#') or len(self.hex_value) != 7:
             raise ValueError("Hex value must be a valid hex color code (e.g., #RRGGBB).")
 
@@ -82,7 +80,7 @@ class GameBoard(models.Model):
             colorPoint = ColorPoints(
                 x=point['x'],
                 y=point['y'],
-                color=Color(name=point['color']['name'], hex_value=point['color']['hex_value'])
+                color=Color(hex_value=point['color']['hex_value'])
             )
             colorPoint.validate()
 
@@ -115,9 +113,8 @@ class Path:
         return f"Path({self.color.name}, {len(self.points)} points)"
 
 class Solution(models.Model):
-    id: uuid.UUID
-    game_board: models.ForeignKey(GameBoard, on_delete=models.CASCADE, related_name='solutions')
-    paths: list[Path]
-    models.ForeignKey(
-        'auth.User', on_delete=models.CASCADE, related_name='solutions'
-    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    game_board = models.ForeignKey(GameBoard, on_delete=models.CASCADE, related_name='solutions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    paths = models.JSONField(default=list, blank=True)

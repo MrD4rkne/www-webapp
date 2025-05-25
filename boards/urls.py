@@ -1,5 +1,5 @@
 ﻿from django.urls import path
-from .views import create_background_view, list_backgrounds_view, list_my_backgrounds_view, edit_background_view, create_solution_view
+from .views import *
 
 urlpatterns = [
     path('create/', create_background_view, name='create_background'),
@@ -7,4 +7,6 @@ urlpatterns = [
     path('', list_backgrounds_view, name='list_backgrounds'),
     path('my/', list_my_backgrounds_view, name='list_my_backgrounds'),
     path('<uuid:board_id>/solutions/create/', create_solution_view, name='create_solution'),
+    path('<uuid:board_id>/solutions/<uuid:solution_id>/edit/', edit_solution_view, name='edit_solution'),
+    path('solutions/', list_solutions_view, name='list_solutions'),
 ]

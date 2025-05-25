@@ -23,11 +23,18 @@
                       {% if request.path == list_backgrounds_url %}bg-blue-200 text-white shadow-lg{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
                 All Boards
             </a>
+         {% if user.is_authenticated %}
             <a href="{% url 'list_my_backgrounds' %}"
                class="px-6 py-3 rounded-lg text-sm font-medium transition duration-200
                       {% if request.path == list_my_backgrounds_url %}bg-blue-200 text-white shadow-lg{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
                 My Boards
             </a>
+            <a href="{% url 'list_solutions' %}"
+                class="px-6 py-3 rounded-lg text-sm font-medium transition duration-200
+                       {% if request.path == list_my_backgrounds_url %}bg-blue-200 text-white shadow-lg{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                My Solutions
+            </a>
+        {% endif %}
         </div>
 
         {% if game_boards %}

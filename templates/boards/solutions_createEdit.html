@@ -16,6 +16,8 @@
         <input type="hidden" id="cols" value="{{ game_board.columns }}">
         <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
         <input type="hidden" id="points" value="{{ game_board.points|escapejs }}">
+        <input type="hidden" id="solution_paths" value="{{ solution.paths|default_if_none:''|escapejs }}">
+        <input type="hidden" id="solution_id" value="{{ solution.id|default_if_none:'' }}">
 
         <!-- Background Details Form -->
         <form id="backgroundForm">

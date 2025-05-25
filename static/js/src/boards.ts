@@ -129,8 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Determine if creating or editing
             const url = boardId
-                ? `/api/boards/edit/${boardId}/`
-                : '/api/boards/create/';
+                ? `/api/boards/${boardId}`
+                : '/api/boards';
 
             const method = boardId ? 'PUT' : 'POST';
 
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/boards/delete/${boardId}/`, {
+            const response = await fetch(`/api/boards/${boardId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',

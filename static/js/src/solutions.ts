@@ -1,13 +1,35 @@
 ﻿   import {Board, Point, generateBoard} from './boardsCreator.js';
 import {parseErrorResponse} from "./api.js";
 
+interface Path {
+    start:{
+        x: number;
+        y: number;
+    }
+    end:{
+        x: number;
+        y: number;
+    }
+    color: {
+        hex_value: string;
+    };
+    path: {x: number, y: number}[];
+    element?: SVGElement;
+}
+
+interface Solution {
+    paths: Path[];
+    id: string;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // State variables
-    const board = loadBoardData();
-    let paths: Path[] = [];
     let currentPath: Path | null = null;
-    let isDragging = false;
     let startPoint: HTMLElement | null = null;
+    let isDragging = false;
+    const board = loadBoardData();
+    let solution = loadSolutionData(board.columns, board.rows);
+    let paths: Path[] = solution.paths || [];
     let errorContainer = document.getElementById('errorContainer') as HTMLDivElement;
     const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
     const csrfToken = (document.getElementById('csrf_token') as HTMLInputElement).value;
@@ -18,23 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Save button event handler
     saveBtn?.addEventListener('click', saveSolution);
 
-    interface Path {
-        startX: number;
-        startY: number;
-        endX: number;
-        endY: number;
-        color: string;
-        cells: {x: number, y: number}[];
-        element?: SVGElement;
-    }
-
     function setupGrid() {
         const gridContainer = document.getElementById('gridContainer') as HTMLDivElement;
         const dots = gridContainer.querySelectorAll('.point-dot');
 
         // Add event listeners to dots
         dots.forEach(dot => {
-            if(!(dot instanceof HTMLElement)) return;
+            if (!(dot instanceof HTMLElement)) return;
             dot.addEventListener('mousedown', handleDotMouseDown);
             dot.addEventListener('dblclick', (e: MouseEvent) => {
                 e.preventDefault();
@@ -42,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cell = dot.parentElement as HTMLElement;
 
                 // Check if the dot is already part of a path
-                const path = paths.find(path => path.cells.some(c => c.x === parseInt(cell.dataset.x || '0') && c.y === parseInt(cell.dataset.y || '0')));
+                const path = paths.find(path => path.path.some(c => c.x === parseInt(cell.dataset.x || '0') && c.y === parseInt(cell.dataset.y || '0')));
                 if (!path) {
                     throw new Error("Dot is not part of any path");
                 }
@@ -67,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Check if the dot is already part of a path
-        if (paths.some(path => path.cells.some(c => c.x === parseInt(cell.dataset.x || '0') && c.y === parseInt(cell.dataset.y || '0')))) {
+        if (paths.some(path => path.path.some(c => c.x === parseInt(cell.dataset.x || '0') && c.y === parseInt(cell.dataset.y || '0')))) {
             clearErrors();
             showError("This dot is already part of a path");
             return;
@@ -78,12 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create a new path
         currentPath = {
-            startX: parseInt(cell.dataset.x || '0'),
-            startY: parseInt(cell.dataset.y || '0'),
-            endX: parseInt(cell.dataset.x || '0'),
-            endY: parseInt(cell.dataset.y || '0'),
-            color: color,
-            cells: [{
+            start:{
+                x: parseInt(cell.dataset.x || '0'),
+                y: parseInt(cell.dataset.y || '0')
+            },
+            end: {
+                x: parseInt(cell.dataset.x || '0'),
+                y: parseInt(cell.dataset.y || '0')
+            },
+            color: {
+                hex_value: color
+            },
+            path: [{
                 x: parseInt(cell.dataset.x || '0'),
                 y: parseInt(cell.dataset.y || '0')
             }]
@@ -114,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Check if this would be a new cell in our path
-        const lastCell = currentPath.cells[currentPath.cells.length - 1];
+        const lastCell = currentPath.path[currentPath.path.length - 1];
 
         // Only add if adjacent to last cell (no diagonal moves)
         if (Math.abs(lastCell.x - cellX) + Math.abs(lastCell.y - cellY) !== 1) {
@@ -122,12 +140,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Check if the cell is already in the current path
-        if (currentPath.cells.some(c => c.x === cellX && c.y === cellY)) {
+        if (currentPath.path.some(c => c.x === cellX && c.y === cellY)) {
             return;
         }
 
         // Check if the cell is already part of another path
-        if (paths.some(path => path.cells.some(c => c.x === cellX && c.y === cellY))) {
+        if (paths.some(path => path.path.some(c => c.x === cellX && c.y === cellY))) {
             return;
         }
 
@@ -137,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        currentPath.cells.push({ x: cellX, y: cellY });
+        currentPath.path.push({x: cellX, y: cellY});
         drawCurrentPath();
     }
 
@@ -165,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const endColor = endDot.getAttribute('data-color');
 
             // Validate same color
-            if (endColor !== currentPath.color) {
+            if (endColor !== currentPath.color.hex_value) {
                 showError("You can only connect dots of the same color");
                 clearCurrentPath();
                 resetDrag();
@@ -176,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const endX = parseInt(endCell.dataset.x || '0');
             const endY = parseInt(endCell.dataset.y || '0');
 
-            if (currentPath.startX === endX && currentPath.startY === endY) {
+            if (currentPath.start.x === endX && currentPath.start.y === endY) {
                 clearErrors();
                 showError("Cannot connect a dot to itself");
                 clearCurrentPath();
@@ -185,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Check if last element on the path is in the neighborhood of the end dot
-            const lastCell = currentPath.cells[currentPath.cells.length - 1];
+            const lastCell = currentPath.path[currentPath.path.length - 1];
             if (Math.abs(lastCell.x - endX) + Math.abs(lastCell.y - endY) !== 1) {
                 clearErrors();
                 showError("End dot must be adjacent to the last cell of the path");
@@ -194,12 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            currentPath.cells.push({ x: endX, y: endY });
+            currentPath.path.push({x: endX, y: endY});
             drawCurrentPath();
 
             // Set the end point
-            currentPath.endX = endX;
-            currentPath.endY = endY;
+            currentPath.end.x = endX;
+            currentPath.end.y = endY;
 
             // Check for path crossing
             if (isPathCrossing(currentPath)) {
@@ -223,13 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check each segment of the new path against every segment of all existing paths
         for (const existingPath of paths) {
             // Check for segment intersections
-            for (let i = 1; i < newPath.cells.length; i++) {
-                const newSegStart = newPath.cells[i-1];
-                const newSegEnd = newPath.cells[i];
+            for (let i = 1; i < newPath.path.length; i++) {
+                const newSegStart = newPath.path[i - 1];
+                const newSegEnd = newPath.path[i];
 
-                for (let j = 1; j < existingPath.cells.length; j++) {
-                    const existSegStart = existingPath.cells[j-1];
-                    const existSegEnd = existingPath.cells[j];
+                for (let j = 1; j < existingPath.path.length; j++) {
+                    const existSegStart = existingPath.path[j - 1];
+                    const existSegEnd = existingPath.path[j];
 
                     if (doSegmentsIntersect(
                         newSegStart.x, newSegStart.y,
@@ -245,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
-function doSegmentsIntersect(
+    function doSegmentsIntersect(
         p1x: number, p1y: number, p2x: number, p2y: number,
         p3x: number, p3y: number, p4x: number, p4y: number
     ): boolean {
@@ -314,7 +332,7 @@ function doSegmentsIntersect(
         let pathData = "";
 
         // Build path data
-        currentPath.cells.forEach((cell, index) => {
+        currentPath.path.forEach((cell, index) => {
             const x = (cell.x + 0.5) * cellWidth;
             const y = (cell.y + 0.5) * cellHeight;
 
@@ -326,7 +344,7 @@ function doSegmentsIntersect(
         });
 
         path.setAttribute("d", pathData);
-        path.setAttribute("stroke", currentPath.color);
+        path.setAttribute("stroke", currentPath.color.hex_value);
         path.setAttribute("stroke-width", "5");
         path.setAttribute("fill", "none");
         path.setAttribute("stroke-opacity", "0.7");
@@ -348,7 +366,7 @@ function doSegmentsIntersect(
         }
     }
 
-function clearCurrentPath() {
+    function clearCurrentPath() {
         if (currentPath && currentPath.element) {
             currentPath.element.remove();
         }
@@ -363,25 +381,35 @@ function clearCurrentPath() {
     async function saveSolution() {
         clearErrors();
 
+        const createNew = !solution.id; // If no ID, we are creating a new solution
+
         if (paths.length === 0) {
             showError("No paths have been drawn");
             return;
         }
 
         // Create solution data
-        const solutionData = {
+        let solutionData: any = {
             board_id: board.id,
+            name: "solution",
             paths: paths.map(p => ({
-                start: { x: p.startX, y: p.startY },
-                end: { x: p.endX, y: p.endY },
-                color: p.color,
-                path: p.cells
+                start: {x: p.start.x, y: p.start.y},
+                end: {x: p.end.x, y: p.end.y},
+                color: {
+                    hex_value: p.color.hex_value
+                },
+                path: p.path
             }))
         };
 
         try {
-            const response = await fetch('/api/solutions/create/', {
-                method: 'POST',
+            let link = `/api/boards/${board.id}/solutions`;
+            if(! createNew){
+                link = `/api/boards/${board.id}/solutions/${solution.id}`;
+                solutionData.id = solution.id;
+            }
+            const response = await fetch(link, {
+                method: createNew ? 'POST' : 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
@@ -398,7 +426,7 @@ function clearCurrentPath() {
             }
 
             alert('Solution saved successfully!');
-            window.location.href = '/solutions/';
+            window.location.href = '/boards/solutions/';
         } catch (error) {
             console.error('Error saving solution:', error);
             showError('Failed to save solution. Check console for details.');
@@ -423,6 +451,30 @@ function clearCurrentPath() {
         errorContainer.classList.add('hidden');
         errorContainer.innerHTML = '';
     }
+
+    function loadSolutionData(columns: number, rows: number): Solution {
+        const pathsJson = (document.getElementById('solution_paths') as HTMLInputElement).value;
+        const paths: Path[] = decodeJSON(pathsJson) || [];
+
+        const solution: Solution = {
+            paths: paths,
+            id: (document.getElementById('solution_id') as HTMLInputElement).value || ''
+        };
+
+        console.log('Loaded solution:', solution);
+
+        // Render existing paths on the grid
+        paths.forEach(path => {
+            currentPath = path;
+            drawCurrentPath();
+            finalizeCurrentPath();
+        });
+
+        resetDrag();
+
+        return solution;
+    }
+
 });
 
 function loadBoardData(): Board {
