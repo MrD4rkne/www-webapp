@@ -15,9 +15,6 @@ from django.contrib import messages
 # In production, you would use something like Redis
 active_clients = {}
 
-# A simple queue to store events that need to be sent
-event_queue = []
-
 def add_event(event_type, data):
     """
     Add an event to the queue to be sent to all connected clients.
@@ -27,7 +24,9 @@ def add_event(event_type, data):
         "data": data,
         "timestamp": datetime.now().isoformat()
     }
-    event_queue.append(event)
+    print(f"Adding event: {event}")
+    for client_id in active_clients:
+        active_clients[client_id].append(event)
     return event
 
 
@@ -36,25 +35,27 @@ def event_stream():
     Generator function that yields SSE formatted data
     """
     # Generate a unique client ID
-    client_id = str(datetime.now().timestamp())
-    active_clients[client_id] = True
-    
+    client_id = uuid.uuid4().hex
+    active_clients[client_id] = []
+
+    i = 0
     try:
         # Send a welcome message
         yield f"data: {json.dumps({'message': 'Connected to SSE stream'})}\n\n"
         
         while True:
-            # Check if there are any events to send
-            if event_queue:
-                event = event_queue.pop(0)
+            i += 1
+
+            if active_clients[client_id]:
+                event = active_clients[client_id].pop(0)
                 yield f"event: {event['event']}\n"
                 yield f"data: {json.dumps(event['data'])}\n\n"
             else:
-                # Send a keep-alive comment every 15 seconds
-                yield ": keep-alive\n\n"
-                
-            # Sleep to prevent excessive CPU usage
-            time.sleep(3)
+                if i % 5 == 0:
+                    i = 0
+                    yield ": keep-alive\n\n"
+
+            time.sleep(1)
     finally:
         # Remove client when connection is closed
         if client_id in active_clients:
