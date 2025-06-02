@@ -18,7 +18,6 @@ active_clients = {}
 # A simple queue to store events that need to be sent
 event_queue = []
 
-
 def add_event(event_type, data):
     """
     Add an event to the queue to be sent to all connected clients.
@@ -77,50 +76,3 @@ class SSENotificationsView(View):
         response['Cache-Control'] = 'no-cache'
         response['X-Accel-Buffering'] = 'no'  # Disable buffering in Nginx
         return response
-
-
-class SSEDemoView(TemplateView):
-    """
-    Demo view that shows a UI for testing SSE notifications
-    """
-    template_name = 'notifications/sse.html'
-
-
-class SSETestView(TemplateView):
-    """
-    View for testing SSE events manually
-    """
-    template_name = 'notifications/test.html'
-
-
-class TriggerTestEventView(View):
-    """
-    View to manually trigger SSE events for testing
-    """
-    def post(self, request, *args, **kwargs):
-        event_type = request.POST.get('event_type')
-        
-        if event_type == 'newBoard':
-            # Trigger a new board event
-            data = {
-                "board_id": str(uuid.uuid4()),
-                "board_name": request.POST.get('board_name', 'Test Board'),
-                "creator_username": request.POST.get('creator_username', 'TestUser')
-            }
-        elif event_type == 'newPath':
-            # Trigger a new path event
-            data = {
-                "path_id": str(uuid.uuid4()),
-                "board_id": request.POST.get('board_id', '123'),
-                "board_name": request.POST.get('path_board_name', 'Test Board'),
-                "user_username": request.POST.get('user_username', 'PathCreator')
-            }
-        else:
-            messages.error(request, "Invalid event type")
-            return HttpResponseRedirect(reverse('notifications:test'))
-        
-        # Add the event to the queue
-        add_event(event_type, data)
-        
-        messages.success(request, f"Test {event_type} event sent successfully")
-        return HttpResponseRedirect(reverse('notifications:test'))
