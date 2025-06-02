@@ -193,6 +193,8 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
+os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+
 # Logging Configuration
 LOGGING = {
     'version': 1,
