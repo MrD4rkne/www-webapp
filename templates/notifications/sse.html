@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}SSE Notifications{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Real-time Notifications</h1>
+    <div class="card">
+        <div class="card-header">
+            <h2>Recent Events</h2>
+        </div>
+        <div class="card-body">
+            <ul id="events-list" class="list-group">
+                <li class="list-group-item">Waiting for events...</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Connect to the SSE endpoint
+        const eventSource = new EventSource('/sse/notifications/');
+        const eventsList = document.getElementById('events-list');
+        
+        // Handle the connection open event
+        eventSource.onopen = function() {
+            console.log('SSE connection established');
+        };
+        
+        // Handle generic messages
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const item = document.createElement('li');
+            item.className = 'list-group-item';
+            item.textContent = `Generic message: ${JSON.stringify(data)}`;
+            eventsList.appendChild(item);
+            
+            // Keep only the last 10 items
+            while (eventsList.childElementCount > 10) {
+                eventsList.removeChild(eventsList.firstChild);
+            }
+        };
+        
+        // Handle new board events
+        eventSource.addEventListener('newBoard', function(event) {
+            const data = JSON.parse(event.data);
+            const item = document.createElement('li');
+            item.className = 'list-group-item list-group-item-success';
+            item.innerHTML = `<strong>New Board:</strong> "${data.board_name}" created by ${data.creator_username}`;
+            eventsList.appendChild(item);
+            
+            // Keep only the last 10 items
+            while (eventsList.childElementCount > 10) {
+                eventsList.removeChild(eventsList.firstChild);
+            }
+        });
+        
+        // Handle new path events
+        eventSource.addEventListener('newPath', function(event) {
+            const data = JSON.parse(event.data);
+            const item = document.createElement('li');
+            item.className = 'list-group-item list-group-item-info';
+            item.innerHTML = `<strong>New Solution:</strong> User ${data.user_username} solved board "${data.board_name}"`;
+            eventsList.appendChild(item);
+            
+            // Keep only the last 10 items
+            while (eventsList.childElementCount > 10) {
+                eventsList.removeChild(eventsList.firstChild);
+            }
+        });
+        
+        // Handle connection errors
+        eventSource.onerror = function(error) {
+            console.error('SSE connection error:', error);
+            const item = document.createElement('li');
+            item.className = 'list-group-item list-group-item-danger';
+            item.textContent = 'Connection error. Reconnecting...';
+            eventsList.appendChild(item);
+        };
+    });
+</script>
+{% endblock %}
