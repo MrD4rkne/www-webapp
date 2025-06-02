@@ -10,6 +10,8 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.contrib import messages
 
+KEEP_ALIVE_INTERVAL = 15 # seconds
+
 # A dictionary to store active clients
 # This is a simple in-memory solution for this lab
 # In production, you would use something like Redis
@@ -25,42 +27,47 @@ def add_event(event_type, data):
         "timestamp": datetime.now().isoformat()
     }
     print(f"Adding event: {event}")
-    for client_id in active_clients:
-        active_clients[client_id].append(event)
+
+    with event_condition:
+        for client_id in active_clients:
+            active_clients[client_id].append(event)
+            # Notify waiting threads
+            event_condition.notify_all()
     return event
 
+
+from threading import Condition
+
+# A condition variable to signal new events
+event_condition = Condition()
 
 def event_stream():
     """
     Generator function that yields SSE formatted data
     """
-    # Generate a unique client ID
     client_id = uuid.uuid4().hex
     active_clients[client_id] = []
 
-    i = 0
     try:
         # Send a welcome message
         yield f"data: {json.dumps({'message': 'Connected to SSE stream'})}\n\n"
         
         while True:
-            i += 1
+            with event_condition:
+                # Wait for a signal or timeout
+                event_condition.wait(timeout=KEEP_ALIVE_INTERVAL)
 
             if active_clients[client_id]:
                 event = active_clients[client_id].pop(0)
                 yield f"event: {event['event']}\n"
                 yield f"data: {json.dumps(event['data'])}\n\n"
             else:
-                if i % 5 == 0:
-                    i = 0
-                    yield ": keep-alive\n\n"
-
-            time.sleep(1)
+                # Send keep-alive if no events
+                yield ": keep-alive\n\n"
     finally:
         # Remove client when connection is closed
         if client_id in active_clients:
             del active_clients[client_id]
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SSENotificationsView(View):
