@@ -10,6 +10,8 @@ urlpatterns = [
     path("images/", include("images.urls")),
     path("routes/", include("routes.urls")),
     path("accounts/", include("accounts.urls")),
+    path("boards/", include("boards.urls")),
+    path("", include("notifications.urls")),
     path("admin/", admin.site.urls),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -19,6 +21,7 @@ urlpatterns = [
 
     path('api/routes/', include('routes.api_urls')),
     path('api/images/', include('images.api_urls')),
+    path('api/boards/', include('boards.api_urls')),
 
     path('media/<path:path>', views.protected_media, name='protected_media'),
 

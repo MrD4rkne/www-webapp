@@ -1,7 +1,12 @@
 {
   "scripts": {
-    "build": "npx tailwindcss -i ./static/src/styles.css -o ./static/dist/output.css --minify",
-    "dev": "npx tailwindcss -i ./static/src/styles.css -o ./static/dist/output.css --watch"
+    "build:tailwind": "npx tailwindcss -i ./static/css/src/styles.css -o ./static/css/dist/styles.css --minify",
+    "build:css": "npm run build:tailwind",
+    "build:fa:fonts": "node -e \"require('fs').cpSync('./node_modules/@fortawesome/fontawesome-free/webfonts', './static/css/webfonts', { recursive: true })\"",
+    "build:fa:css": "node -e \"require('fs').cpSync('./node_modules/@fortawesome/fontawesome-free/css', './static/css/dist', { recursive: true })\"",
+    "build:fa": "npm run build:fa:css && npm run build:fa:fonts",
+    "build:ts": "tsc --project tsconfig.json",
+    "build": "npm run build:css && npm run build:fa && npm run build:ts"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
@@ -9,9 +14,12 @@
     "tailwindcss": "^4.1.4"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
     "@tailwindcss/cli": "^4.1.4",
+    "cp": "^0.2.0",
     "tailwind-scrollbar": "^4.0.2",
     "tailwindcss-intersect": "^2.2.0",
-    "tailwindcss-motion": "^1.1.0"
+    "tailwindcss-motion": "^1.1.0",
+    "typescript": "^5.8.3"
   }
 }

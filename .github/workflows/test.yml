@@ -1,7 +1,9 @@
-﻿name: Deploy to Azure Web App
+﻿name: Run tests
 
 on:
   push:
+    branches: [ master ]
+  pull_request:
     branches: [ master ]
   workflow_dispatch:
 
@@ -9,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -38,9 +40,6 @@ jobs:
         npm install
         npm run build
 
-    - name: Ls static directory
-      run: ls -R static/
-
     - name: Run tests
       env:
         DB_NAME: postgres
@@ -52,21 +51,3 @@ jobs:
         docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=hunter2 postgres:13
         sleep 10
         python manage.py test
-
-    - name: Create static directory
-      run: mkdir -p staticfiles
-
-    - name: Collect static files (if command exists)
-      run: |
-        python manage.py collectstatic --noinput
-
-    - name: Generate deployment package
-      run: |
-        zip -r deploy.zip . -x ".*" -x "*__pycache__/*" -x "*.git*" -x "*node_modules/*" -x "*.github/*" -x "media/images/*" "static/*"
-
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ./deploy.zip

@@ -18,6 +18,7 @@ import routes.apps
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+APPEND_SLASH = False
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -26,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-k=!%x36*ni&mcup@x6pll1#3$hu*tim0(!r!9_d5lkb1jt+t^)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1", "10.0.2.53"]
 
@@ -41,6 +42,8 @@ if os.getenv('CSRF_TRUSTED_ORIGINS'):
 INSTALLED_APPS = [
     'images.apps.ImagesConfig',
     'routes.apps.RoutesConfig',
+    'boards.apps.BoardsConfig',
+    'notifications.apps.NotificationsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -136,9 +139,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
-# Dodaj na końcu pliku settings.py
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = [
@@ -185,9 +187,51 @@ SPECTACULAR_SETTINGS = {
             'name': 'sessionid',
         },
     },
-    'TAGS': [
-        {'name': 'token', 'description': 'Endpoints for authentication'},
+    'TAGS': [        {'name': 'token', 'description': 'Endpoints for authentication'},
         {'name': 'Routes', 'description': 'Endpoints for managing routes'},
         {'name': 'Images', 'description': 'Endpoints for managing images'},
     ],
+}
+
+os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'sse.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'notifications': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
 }
