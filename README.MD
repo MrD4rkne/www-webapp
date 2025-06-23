@@ -4,10 +4,11 @@ A web application for creating and playing 'connect-the-dots' games on custom ma
 
 ## ✨ Features
 
--   **🗺️ Custom Map Backgrounds**: Upload and manage your own images to serve as game boards via the admin panel.
+-   **🗺️ Custom Map Backgrounds**: Upload and manage your own images as game boards via the admin panel.
 -   **✍️ Route Creation**: Visually create, manage, and reorder points to define paths on your maps.
--   **🎮 Game Mode**: Challenge yourself or others with a "connect the dots" game based on your custom routes.
+-   **🎮 Game Mode**: Play "connect the dots" games based on your custom routes, solo or with others.
 -   **🧩 Board Management**: Define and organize multiple game boards.
+-   **🔔 Real-Time Updates**: Receive instant notifications (via Server-Sent Events) when new boards or paths are created.
 
 ## 🛠️ Tech Stack
 
