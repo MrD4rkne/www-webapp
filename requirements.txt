@@ -1,6 +1,6 @@
 ﻿Django==4.2.23
 psycopg2-binary==2.9.10
-Pillow==11.2.1
+Pillow==11.3.0
 django-mathfilters==1.0.0
 djangorestframework==3.16.0
 drf-spectacular==0.28.0
