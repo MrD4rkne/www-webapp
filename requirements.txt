@@ -2,6 +2,6 @@
 psycopg2-binary==2.9.10
 Pillow==11.3.0
 django-mathfilters==1.0.0
-djangorestframework==3.16.0
+djangorestframework==3.16.1
 drf-spectacular==0.28.0
 djangorestframework-simplejwt==5.5.0
