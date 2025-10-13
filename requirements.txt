@@ -1,5 +1,5 @@
 ﻿Django==4.2.25
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
 Pillow==11.3.0
 django-mathfilters==1.0.0
 djangorestframework==3.16.1
