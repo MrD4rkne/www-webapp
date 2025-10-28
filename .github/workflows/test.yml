@@ -48,6 +48,6 @@ jobs:
         DB_HOST: localhost
         DB_PORT: 5432
       run: |
-        docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=hunter2 postgres:13
+        docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=hunter2 postgres:latest
         sleep 10
         python manage.py test
